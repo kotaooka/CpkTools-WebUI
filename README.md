@@ -33,8 +33,8 @@ Python をインストールしていない場合は、以下のリンクから�
 
 ### 2. リリースファイルのダウンロード
 
-本プロジェクトの最新リリースは [GitHub Releases](https://github.com/yourusername/yourrepository/releases) ページからダウンロードできます。  
-ダウンロードした ZIP ファイル（または展開済みのファイル群）を、任意のフォルダ（例：`D:\CpkTools`）に保存してください。
+本プロジェクトの最新リリースは [GitHub Releases]([https://github.com/yourusername/yourrepository/releases](https://github.com/kotaooka/CpkTools-WebUI/releases)) ページからダウンロードできます。  
+ダウンロードした ZIP ファイルを展開し、任意のフォルダ（例：`D:\CpkTools-WebUI`）に保存してください。
 
 ### 3. setup.bat を実行して仮想環境の構築とライブラリのインストール
 
