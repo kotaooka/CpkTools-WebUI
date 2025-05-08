@@ -219,7 +219,7 @@ def run_analysis(uploaded_file, selected_columns, spec_table):
 # -------------------------
 # Gradio UI の構築
 with gr.Blocks() as demo:
-    gr.Markdown("# 🏭 工程能力解析ツール")
+    gr.Markdown("# 🏭 CpkTools-WebUI 工程能力解析ツール")
     
     with gr.Tabs():
         with gr.TabItem("📊 解析ツール"):
@@ -264,6 +264,6 @@ with gr.Blocks() as demo:
             setting_result = gr.Textbox(label="設定結果", lines=2)
             save_button.click(fn=update_output_dir, inputs=[output_dir_box], outputs=[setting_result])
     
-    gr.Markdown("© 2025 工程能力解析ツール")
+    gr.Markdown("© @KotaOoka")
     
 demo.launch(inbrowser=True)  # 公開リンクが必要なら demo.launch(share=True) としてください
