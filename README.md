@@ -1,7 +1,7 @@
 # CpkTools-WebUI
 
 CpkTools WebUI は、Excel ファイルから工程能力解析を実施できるツールです。  
-ユーザーは Excel ファイルをアップロードし、解析対象の列を選択、各列ごとの上限規格値と下限規格値を入力して、
+ユーザーは Excel ファイルをアップロードし、解析対象の列を選択、各列ごとの上限規格値と下限規格値を入力して、  
 各種統計値（最大値、最小値、標準偏差、平均値、Cp、Cpk、尖度、歪度）を計算およびグラフ（ヒストグラム、QQプロット）の生成を行います。  
 結果は Excel ファイルに出力され、Web UI 上にプレビュー表示されます。
 
@@ -9,10 +9,10 @@ CpkTools WebUI は、Excel ファイルから工程能力解析を実施でき�
 
 - [要求環境](#要求環境)
 - [インストール方法](#インストール方法)
-  - [1. Python のインストール (Windows)](#1-python-のインストール-windows)
+  - [1. Python のインストール (Windows)](#1-python-の-インストール-windows)
   - [2. リリースファイルのダウンロード](#2-リリースファイルのダウンロード)
-  - [3. setup.bat を実行して仮想環境の構築とライブラリのインストール](#3-setupbat-を実行して仮想環境の構築とライブラリのインストール)
-- [CpkTools-WebUIの起動と使用方法](##-CpkTools-WebUI-の起動と使用方法)
+  - [3. setup.bat を実行して仮想環境の構築とライブラリのインストール](#3-setupbat-を-実行して-仮想環境の構築とライブラリのインストール)
+- [CpkTools-WebUI の起動と使用方法](#cpktools-webui-の-起動と-使用方法)
 - [注意事項](#注意事項)
 - [ライセンス](#ライセンス)
 
@@ -20,7 +20,7 @@ CpkTools WebUI は、Excel ファイルから工程能力解析を実施でき�
 
 - **OS**: Windows  
 - **Python**: Python 3.x  
-- **必要な Python ライブラリ**: pandas, matplotlib, scipy, Pillow, gradio
+- **必要な Python ライブラリ**: pandas, pyarrow, matplotlib, scipy, Pillow, gradio
 
 ## インストール方法
 
@@ -89,4 +89,4 @@ Python をインストールしていない場合は、以下のリンクから�
 ## ライセンス
 
 本プロジェクトは **MIT License** の下で提供されています。  
-詳細はプロジェクトルートの `LICENSE` ファイルをご確認ください。
+詳細はプロジェクトルートの `LICENSE` ファイルをご確認ください.
