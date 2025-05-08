@@ -32,7 +32,10 @@ def update_output_dir(new_dir):
     # 設定の保存と、出力先フォルダの存在確認・作成
     save_settings(new_dir)
     os.makedirs(new_dir, exist_ok=True)
+    global OUTPUT_DIR  # グローバル変数を更新するための宣言
+    OUTPUT_DIR = new_dir
     return f"出力先ディレクトリが変更されました: {new_dir}"
+
 
 settings = load_settings()
 OUTPUT_DIR = settings.get("output_dir", DEFAULT_OUTPUT_DIR)
@@ -98,6 +101,11 @@ def run_analysis(uploaded_file, selected_columns, spec_table):
     qq_images = []     # QQプロット画像のリスト
     excel_file = None  # 出力した Excel ファイルのパス
     excel_preview = None  # 統計結果の DataFrame
+
+     # ここで最新の設定をロード
+    settings = load_settings()
+    output_dir = settings.get("output_dir", DEFAULT_OUTPUT_DIR)
+    os.makedirs(output_dir, exist_ok=True)  # 存在しなければ作成
 
     if uploaded_file is None:
         return "エラー: ファイルが選択されていません", None, None, None, None
@@ -266,4 +274,4 @@ with gr.Blocks() as demo:
     
     gr.Markdown("© @KotaOoka")
     
-demo.launch(inbrowser=True)  # 公開リンクが必要なら demo.launch(share=True) としてください
+demo.launch(inbrowser=True) 
