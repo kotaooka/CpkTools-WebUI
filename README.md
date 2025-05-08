@@ -110,7 +110,42 @@ Python をインストールしていない場合は、以下のリンクから�
 - アップロードする Excel ファイルに**有効なデータ**が含まれていること、解析対象の列に**欠損値がない**ことを確認してください。
 - 規格値入力は**正しい数値形式**で行ってください。すべての列で同じ規格値を使用する場合は、まず**1 列目に正確な値**を入力してからチェックボックスを ON にしてください。
 
-## ライセンス
+## License
 
-本プロジェクトは **MIT License** の下で提供されています。  
-詳細はプロジェクトルートの `LICENSE` ファイルをご確認ください.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Third-Party Libraries & Licenses
+
+This project makes use of several open source libraries. Please note the following copyright information:
+
+- **pandas**  
+  Licensed under the BSD 3-Clause License.  
+  View the full license [here](https://github.com/pandas-dev/pandas/blob/main/LICENSE).
+
+- **pyarrow**  
+  Licensed under the Apache License 2.0.  
+  View the full license [here](https://github.com/apache/arrow/blob/master/LICENSE.txt).
+
+- **scipy**  
+  Licensed under the BSD License.  
+  View the full license [here](https://github.com/scipy/scipy/blob/main/LICENSE.txt).
+
+- **matplotlib**  
+  Licensed under a BSD-style license.  
+  View the full license [here](https://matplotlib.org/stable/users/license.html).
+
+- **pillow**  
+  Licensed under the Historical PIL License (a variant of an open source license similar to BSD).  
+  View details [here](https://github.com/python-pillow/Pillow/blob/main/LICENSE).
+
+- **gradio**  
+  Licensed under the MIT License.  
+  View the full license [here](https://github.com/gradio-app/gradio/blob/main/LICENSE).
+
+- **openpyxl**  
+  Licensed under the MIT License.  
+  View license details [here](https://openpyxl.readthedocs.io/en/stable/license.html).
+
+- **numpy**  
+  Licensed under the BSD License.  
+  View the full license [here](https://github.com/numpy/numpy/blob/main/LICENSE.txt).
