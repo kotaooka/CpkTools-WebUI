@@ -3,22 +3,31 @@
 CpkTools WebUI は、Excel ファイルから工程能力解析を実施できるツールです。  
 ユーザーは Excel ファイルをアップロードし、解析対象の列を選択、各列ごとの上限規格値と下限規格値を入力して、  
 各種統計値（最大値、最小値、標準偏差、平均値、Cp、Cpk、尖度、歪度）を計算および
-グラフ（ヒストグラム、QQプロット）の生成を行います。  
+グラフ（ヒストグラム、QQプロット、確率密度分布）の生成を行います。  
 結果は Excel ファイルに出力され、Web UI 上にプレビュー表示されます。
 
-## 実行例
-![image](https://github.com/user-attachments/assets/473b3a8f-c92e-494f-909e-977a0d8ba90c)![image](https://github.com/user-attachments/assets/2f229a14-06fc-488d-a712-7c3b86393fc5)
-
 ## 目次
-
+- [実行例](#実行例)
 - [要求環境](#要求環境)
 - [インストール方法](#インストール方法)
-  - [1. Python のインストール (Windows)](#1-python-の-インストール-windows)
+  - [1. Pythonのインストール](#1-pythonのインストール)
   - [2. リリースファイルのダウンロード](#2-リリースファイルのダウンロード)
-  - [3. setup.bat を実行して仮想環境の構築とライブラリのインストール](#3-setupbat-を-実行して-仮想環境の構築とライブラリのインストール)
-- [CpkTools-WebUI の起動と使用方法](#cpktools-webui-の-起動と-使用方法)
+  - [3. setup.batを実行して仮想環境の構築とライブラリのインストール](#3-setupbatを実行して仮想環境の構築とライブラリのインストール)
+- [CpkTools-WebUIの起動と使用方法](#cpktools-webuiの起動と使用方法)
 - [注意事項](#注意事項)
 - [ライセンス](#ライセンス)
+
+
+## 実行例
+![image](https://github.com/user-attachments/assets/cb18c623-0eba-4da9-872f-88a65000e740)
+
+![image (2)](https://github.com/user-attachments/assets/e69b42d6-0e36-4831-a9ea-69fc489d0f78)
+
+![image (3)](https://github.com/user-attachments/assets/ce5abb5c-5743-4aa2-811a-1961fbf9d42c)
+
+![image (1)](https://github.com/user-attachments/assets/2964abc7-7be4-4afe-9249-e32083340aff)
+
+
 
 ## 要求環境
 
@@ -28,7 +37,7 @@ CpkTools WebUI は、Excel ファイルから工程能力解析を実施でき�
 
 ## インストール方法
 
-### 1. Python のインストール (Windows)
+### 1. Pythonのインストール
 
 Python をインストールしていない場合は、以下のリンクから最新の Python 3.x をダウンロードしてください。  
 ※ インストール時に「Add Python to PATH」にチェックを入れることを推奨します。
@@ -40,14 +49,14 @@ Python をインストールしていない場合は、以下のリンクから�
 本プロジェクトの最新リリースは [GitHub Releases](https://github.com/kotaooka/CpkTools-WebUI/releases) ページからダウンロードできます。  
 ダウンロードした ZIP ファイルを展開し、任意のフォルダ（例：`D:\CpkTools-WebUI`）に保存してください。
 
-### 3. setup.bat を実行して仮想環境の構築とライブラリのインストール
+### 3. setup.batを実行して仮想環境の構築とライブラリのインストール
 
 ダウンロードまたは解凍したプロジェクトフォルダ内にある `setup.bat` を実行します。  
 このバッチファイルは、プロジェクト専用の Python 仮想環境を作成し、必要なライブラリのインストールを自動で行います。
 
-## CpkTools-WebUI の起動と使用方法
+## CpkTools-WebUIの起動と使用方法
 
-### 1. CpkTools-Webui.bat を実行してアプリケーションを起動
+### 1. CpkTools-Webui.batを実行してアプリケーションを起動
 
 同じフォルダ内にある `CpkTools-WebUI.bat` を実行することで、アプリケーションが起動します。  
 実行後、ブラウザが自動的に開き、**Gradio** を用いたユーザーインターフェースが表示されます。
@@ -67,6 +76,8 @@ Python をインストールしていない場合は、以下のリンクから�
 ### 3. 解析対象の列選択
 
 表示されたドロップダウンリストから、**解析対象の列**を選択してください（複数選択可）。
+![image](https://github.com/user-attachments/assets/114ba46f-20b5-48e4-b101-94b28200d118)
+
 
 ### 4. 各列の規格値入力
 
@@ -80,6 +91,9 @@ Python をインストールしていない場合は、以下のリンクから�
 すべての列で同一の規格値を使用する場合は、「**すべての列の規格値を同じにする**」チェックボックスを ON にしてください。  
 チェックボックスが有効になると、**1 列目の規格値が自動的に全列にコピー**されます。
 
+![image](https://github.com/user-attachments/assets/cbfdd102-3840-4a97-aea2-0e2b37fe10f5)
+
+
 ### 5. 解析開始
 
 入力内容に問題がなければ、「**解析開始**」ボタンをクリックしてください。  
@@ -89,7 +103,7 @@ Python をインストールしていない場合は、以下のリンクから�
 
 - 統計結果は、画面上の**結果プレビュー**と**Excel プレビュー領域**に表示されます。  
 - 生成された Excel ファイルは、`output`フォルダに出力され、**ダウンロードリンク**からも取得できます。  
-- 各列の**ヒストグラム**と**QQ プロット**も表示され、解析内容を視覚的に確認できます。
+- 各列の**ヒストグラム**と**QQ プロット**と**確率密度分布**も表示され、解析内容を視覚的に確認できます。
 
 ## 注意事項
 
