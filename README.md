@@ -7,8 +7,7 @@ CpkTools WebUI は、Excel ファイルから工程能力解析を実施でき�
 結果は Excel ファイルに出力され、Web UI 上にプレビュー表示されます。
 
 ## 実行例
-![image](https://github.com/user-attachments/assets/aff5b049-1624-4a6f-9fa0-0e9c9a088607) ![image](https://github.com/user-attachments/assets/d0623b92-c38b-4f48-bb34-85feb100f67d)
-
+![image](https://github.com/user-attachments/assets/473b3a8f-c92e-494f-909e-977a0d8ba90c)![image](https://github.com/user-attachments/assets/2f229a14-06fc-488d-a712-7c3b86393fc5)
 
 ## 目次
 
