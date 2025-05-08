@@ -37,7 +37,7 @@ CpkTools WebUI は、Excel ファイルから工程能力解析を実施でき�
 
 ## インストール方法
 
-### 1. Python のインストール
+### 1. Pythonのインストール
 
 Python をインストールしていない場合は、以下のリンクから最新の Python 3.x をダウンロードしてください。  
 ※ インストール時に「Add Python to PATH」にチェックを入れることを推奨します。
@@ -49,14 +49,14 @@ Python をインストールしていない場合は、以下のリンクから�
 本プロジェクトの最新リリースは [GitHub Releases](https://github.com/kotaooka/CpkTools-WebUI/releases) ページからダウンロードできます。  
 ダウンロードした ZIP ファイルを展開し、任意のフォルダ（例：`D:\CpkTools-WebUI`）に保存してください。
 
-### 3. setup.bat を実行して仮想環境の構築とライブラリのインストール
+### 3. setup.batを実行して仮想環境の構築とライブラリのインストール
 
 ダウンロードまたは解凍したプロジェクトフォルダ内にある `setup.bat` を実行します。  
 このバッチファイルは、プロジェクト専用の Python 仮想環境を作成し、必要なライブラリのインストールを自動で行います。
 
-## CpkTools-WebUI の起動と使用方法
+## CpkTools-WebUIの起動と使用方法
 
-### 1. CpkTools-Webui.bat を実行してアプリケーションを起動
+### 1. CpkTools-Webui.batを実行してアプリケーションを起動
 
 同じフォルダ内にある `CpkTools-WebUI.bat` を実行することで、アプリケーションが起動します。  
 実行後、ブラウザが自動的に開き、**Gradio** を用いたユーザーインターフェースが表示されます。
