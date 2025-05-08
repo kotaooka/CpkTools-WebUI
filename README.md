@@ -2,8 +2,13 @@
 
 CpkTools WebUI は、Excel ファイルから工程能力解析を実施できるツールです。  
 ユーザーは Excel ファイルをアップロードし、解析対象の列を選択、各列ごとの上限規格値と下限規格値を入力して、  
-各種統計値（最大値、最小値、標準偏差、平均値、Cp、Cpk、尖度、歪度）を計算およびグラフ（ヒストグラム、QQプロット）の生成を行います。  
+各種統計値（最大値、最小値、標準偏差、平均値、Cp、Cpk、尖度、歪度）を計算および
+グラフ（ヒストグラム、QQプロット）の生成を行います。  
 結果は Excel ファイルに出力され、Web UI 上にプレビュー表示されます。
+
+## 実行例
+![image](https://github.com/user-attachments/assets/aff5b049-1624-4a6f-9fa0-0e9c9a088607) ![image](https://github.com/user-attachments/assets/d0623b92-c38b-4f48-bb34-85feb100f67d)
+
 
 ## 目次
 
