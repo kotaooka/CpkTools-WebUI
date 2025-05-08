@@ -14,44 +14,14 @@ import gradio as gr
 plt.rcParams['font.family'] = 'MS Gothic'
 
 # -------------------------
-# 設定ファイルと出力先の設定
-SETTINGS_FILE = "settings.json"
-DEFAULT_OUTPUT_DIR = "output"
-
-def load_settings():
-    if os.path.exists(SETTINGS_FILE):
-        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {"output_dir": DEFAULT_OUTPUT_DIR}
-
-def save_settings(output_dir):
-    with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
-        json.dump({"output_dir": output_dir}, f, indent=4, ensure_ascii=False)
-
-def update_output_dir(new_dir):
-    # 設定の保存と、出力先フォルダの存在確認・作成
-    save_settings(new_dir)
-    os.makedirs(new_dir, exist_ok=True)
-    global OUTPUT_DIR  # グローバル変数を更新するための宣言
-    OUTPUT_DIR = new_dir
-    return f"出力先ディレクトリが変更されました: {new_dir}"
-
-
-settings = load_settings()
-OUTPUT_DIR = settings.get("output_dir", DEFAULT_OUTPUT_DIR)
+# 出力先ディレクトリの設定（固定）
+OUTPUT_DIR = "output"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # -------------------------
 # 補助関数: 
 # 「すべての列の規格値を同じにする」チェックボックスに基づいて、規格値入力テーブルを更新する
 def update_spec_df_with_checkbox(selected_columns, same_spec, current_spec):
-    """
-    selected_columns: 選択された列のリスト（例: ["A列 (価格)", "B列 (重さ)"]）
-    same_spec: チェックボックスの状態（True の場合、1列目の規格値を全てにコピー）
-    current_spec: 現在の規格値入力テーブル（gr.Dataframe から渡される値、DataFrame またはリスト）
-
-    チェックボックス ON の場合、1行目の「規格上限値」「規格下限値」を全行に反映して返します。
-    """
     if not selected_columns:
         return []
     # current_spec が DataFrame ならリストに変換、それ以外はリストとして扱う
@@ -78,10 +48,6 @@ def update_spec_df_with_checkbox(selected_columns, same_spec, current_spec):
 # -------------------------
 # ファイルアップロード時のプレビュー更新
 def update_preview(uploaded_file):
-    """
-    アップロードされた Excel ファイルの先頭5行をプレビューとして返すとともに、
-    列名を「A列, B列, ...」形式に更新する。
-    """
     if uploaded_file is None:
         return None, gr.update(choices=[])
     try:
@@ -101,11 +67,6 @@ def run_analysis(uploaded_file, selected_columns, spec_table):
     qq_images = []     # QQプロット画像のリスト
     excel_file = None  # 出力した Excel ファイルのパス
     excel_preview = None  # 統計結果の DataFrame
-
-     # ここで最新の設定をロード
-    settings = load_settings()
-    output_dir = settings.get("output_dir", DEFAULT_OUTPUT_DIR)
-    os.makedirs(output_dir, exist_ok=True)  # 存在しなければ作成
 
     if uploaded_file is None:
         return "エラー: ファイルが選択されていません", None, None, None, None
@@ -229,49 +190,40 @@ def run_analysis(uploaded_file, selected_columns, spec_table):
 with gr.Blocks() as demo:
     gr.Markdown("# 🏭 CpkTools-WebUI 工程能力解析ツール")
     
-    with gr.Tabs():
-        with gr.TabItem("📊 解析ツール"):
-            with gr.Row():
-                file_input = gr.File(label="Excelファイル (xlsx, xls)", file_count="single")
-            with gr.Row():
-                preview_df = gr.DataFrame(label="データプレビュー (先頭5行)", interactive=False)
-            with gr.Row():
-                column_dropdown = gr.Dropdown(choices=[], label="解析対象の列 (A列, B列, ...)", multiselect=True)
-            with gr.Row():
-                spec_df = gr.Dataframe(headers=["解析対象", "規格上限値", "規格下限値"],
-                                       label="各列の規格値入力", interactive=True)
-            with gr.Row():
-                same_spec_chk = gr.Checkbox(label="すべての列の規格値を同じにする", value=False)
-            run_button = gr.Button("解析開始")
-            result_box = gr.Textbox(label="計算結果・ログ", lines=10, interactive=False)
-            with gr.Row():
-                hist_gallery = gr.Gallery(label="ヒストグラム", show_label=True)
-                qq_gallery = gr.Gallery(label="QQプロット", show_label=True)
-            with gr.Row():
-                excel_file_box = gr.File(label="出力されたExcelファイルを開く")
-                excel_preview_box = gr.DataFrame(label="Excelファイルの内容プレビュー", interactive=False)
-            
-            file_input.change(fn=update_preview, inputs=file_input, outputs=[preview_df, column_dropdown])
-            # 列変更時およびチェックボックス変更時に、現在のspec_dfの内容も受け取り更新
-            column_dropdown.change(fn=update_spec_df_with_checkbox, 
-                                   inputs=[column_dropdown, same_spec_chk, spec_df],
-                                   outputs=spec_df)
-            same_spec_chk.change(fn=update_spec_df_with_checkbox, 
-                                 inputs=[column_dropdown, same_spec_chk, spec_df],
-                                 outputs=spec_df)
-            run_button.click(
-                fn=run_analysis, 
-                inputs=[file_input, column_dropdown, spec_df],
-                outputs=[result_box, hist_gallery, qq_gallery, excel_file_box, excel_preview_box]
-            )
+    with gr.Tab("📊 解析ツール"):
+        with gr.Row():
+            file_input = gr.File(label="Excelファイル (xlsx, xls)", file_count="single")
+        with gr.Row():
+            preview_df = gr.DataFrame(label="データプレビュー (先頭5行)", interactive=False)
+        with gr.Row():
+            column_dropdown = gr.Dropdown(choices=[], label="解析対象の列 (A列, B列, ...)", multiselect=True)
+        with gr.Row():
+            spec_df = gr.Dataframe(headers=["解析対象", "規格上限値", "規格下限値"],
+                                   label="各列の規格値入力", interactive=True)
+        with gr.Row():
+            same_spec_chk = gr.Checkbox(label="すべての列の規格値を同じにする", value=False)
+        run_button = gr.Button("解析開始")
+        result_box = gr.Textbox(label="計算結果・ログ", lines=10, interactive=False)
+        with gr.Row():
+            hist_gallery = gr.Gallery(label="ヒストグラム", show_label=True)
+            qq_gallery = gr.Gallery(label="QQプロット", show_label=True)
+        with gr.Row():
+            excel_file_box = gr.File(label="出力されたExcelファイルを開く")
+            excel_preview_box = gr.DataFrame(label="Excelファイルの内容プレビュー", interactive=False)
         
-        with gr.TabItem("⚙️ 設定"):
-            gr.Markdown("出力先フォルダを変更できます。")
-            output_dir_box = gr.Textbox(label="出力先ディレクトリ", value=OUTPUT_DIR)
-            save_button = gr.Button("保存")
-            setting_result = gr.Textbox(label="設定結果", lines=2)
-            save_button.click(fn=update_output_dir, inputs=[output_dir_box], outputs=[setting_result])
+        file_input.change(fn=update_preview, inputs=file_input, outputs=[preview_df, column_dropdown])
+        column_dropdown.change(fn=update_spec_df_with_checkbox, 
+                               inputs=[column_dropdown, same_spec_chk, spec_df],
+                               outputs=spec_df)
+        same_spec_chk.change(fn=update_spec_df_with_checkbox, 
+                             inputs=[column_dropdown, same_spec_chk, spec_df],
+                             outputs=spec_df)
+        run_button.click(
+            fn=run_analysis, 
+            inputs=[file_input, column_dropdown, spec_df],
+            outputs=[result_box, hist_gallery, qq_gallery, excel_file_box, excel_preview_box]
+        )
     
-    gr.Markdown("© @KotaOoka")
+    gr.Markdown("©2025 @KotaOoka")
     
-demo.launch(inbrowser=True) 
+demo.launch(inbrowser=True)
