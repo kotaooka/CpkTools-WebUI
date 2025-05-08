@@ -5,6 +5,7 @@ import datetime
 import os
 import io
 import json
+import numpy as np  # numpy のインポート追加
 
 from PIL import Image
 import gradio as gr
@@ -63,29 +64,30 @@ def update_preview(uploaded_file):
 # 解析処理：各列の統計計算、グラフ生成、Excel出力およびプレビュー表示
 def run_analysis(uploaded_file, selected_columns, spec_table):
     log_messages = ""
-    hist_images = []   # ヒストグラム画像のリスト
-    qq_images = []     # QQプロット画像のリスト
-    excel_file = None  # 出力した Excel ファイルのパス
+    hist_images = []      # ヒストグラム画像のリスト
+    qq_images = []        # QQプロット画像のリスト
+    density_images = []   # 確率密度分布画像のリスト
+    excel_file = None     # 出力した Excel ファイルのパス
     excel_preview = None  # 統計結果の DataFrame
 
     if uploaded_file is None:
-        return "エラー: ファイルが選択されていません", None, None, None, None
+        return "エラー: ファイルが選択されていません", None, None, None, None, None
     try:
         df = pd.read_excel(uploaded_file.name)
         log_messages += "ファイル読み込み成功。\n"
     except Exception as e:
-        return f"エラー: ファイル読み込み中に問題が発生しました: {e}", None, None, None, None
+        return f"エラー: ファイル読み込み中に問題が発生しました: {e}", None, None, None, None, None
     if df.empty:
-        return "エラー: ファイルにデータがありません", None, None, None, None
+        return "エラー: ファイルにデータがありません", None, None, None, None, None
     if not selected_columns:
-        return "エラー: 解析対象の列が選択されていません", None, None, None, None
+        return "エラー: 解析対象の列が選択されていません", None, None, None, None, None
 
     try:
         spec_df = pd.DataFrame(spec_table, columns=["解析対象", "規格上限値", "規格下限値"])
     except Exception as e:
-        return f"エラー: 規格値テーブルの読み込みに失敗しました: {e}", None, None, None, None
+        return f"エラー: 規格値テーブルの読み込みに失敗しました: {e}", None, None, None, None, None
     if len(spec_df) != len(selected_columns):
-        return "エラー: 選択された列数と規格値入力の行数が一致しません。", None, None, None, None
+        return "エラー: 選択された列数と規格値入力の行数が一致しません。", None, None, None, None, None
 
     results = []
     for i, col_label in enumerate(selected_columns):
@@ -139,6 +141,7 @@ def run_analysis(uploaded_file, selected_columns, spec_table):
             log_messages += f"エラー: {col_label} の統計計算中に問題が発生しました: {e}\n"
             continue
 
+        # ヒストグラム図の生成
         try:
             plt.figure()
             plt.hist(data, color="skyblue", edgecolor="black")
@@ -155,6 +158,7 @@ def run_analysis(uploaded_file, selected_columns, spec_table):
         except Exception as e:
             log_messages += f"エラー: {col_label} のヒストグラム生成中に問題が発生しました: {e}\n"
 
+        # QQプロット図の生成
         try:
             plt.figure()
             stats.probplot(data, dist="norm", plot=plt)
@@ -168,6 +172,55 @@ def run_analysis(uploaded_file, selected_columns, spec_table):
             log_messages += f"{col_label} のQQプロット生成完了。\n"
         except Exception as e:
             log_messages += f"エラー: {col_label} のQQプロット生成中に問題が発生しました: {e}\n"
+
+        # 確率密度分布図の生成（±3σ、平均値、規格上限値・下限値のラインとラベル）
+        try:
+            plt.figure()
+            # ±4σの範囲でx軸を作成（±3σが含まれるように）
+            x = np.linspace(mean_val - 4 * std_val, mean_val + 4 * std_val, 100)
+            y = stats.norm.pdf(x, loc=mean_val, scale=std_val)
+            plt.plot(x, y, label="正規分布", color="blue")
+            
+            # ±3σ のラインの追加
+            plt.axvline(mean_val - 3 * std_val, color="red", linestyle="--", label="-3σ")
+            plt.axvline(mean_val + 3 * std_val, color="red", linestyle="--", label="+3σ")
+            # 平均値のライン（橙色の実線）
+            plt.axvline(mean_val, color="orange", linestyle="-", label="平均値")
+            # 規格上限値（緑色の点線）と規格下限値（紫色の点線）のラインを追加
+            plt.axvline(current_usl, color="green", linestyle="-.", label="規格上限値")
+            plt.axvline(current_lsl, color="purple", linestyle="-.", label="規格下限値")
+            
+            # ラベルを追加するために現在のAxesを取得
+            ax = plt.gca()
+            # グラフ上部のy座標(現在のy軸上限値)を取得し、少し下げた位置にラベルを配置する
+            y_top = ax.get_ylim()[1]
+            label_y = y_top * 0.20
+            
+            # 各ライン上に値のラベル（数値を整形して表示）
+            ax.text(mean_val - 3 * std_val, label_y, f"-3σ: {mean_val - 3 * std_val:.2f}", 
+                    rotation=90, color="black", ha="center", va="bottom", fontsize=8)
+            ax.text(mean_val + 3 * std_val, label_y, f"+3σ: {mean_val + 3 * std_val:.2f}", 
+                    rotation=90, color="black", ha="center", va="bottom", fontsize=8)
+            ax.text(mean_val, label_y, f"平均値: {mean_val:.2f}", 
+                    rotation=90, color="black", ha="center", va="bottom", fontsize=8)
+            ax.text(current_usl, label_y, f"規格上限値: {current_usl:.2f}", 
+                    rotation=90, color="black", ha="center", va="bottom", fontsize=8)
+            ax.text(current_lsl, label_y, f"規格下限値: {current_lsl:.2f}", 
+                    rotation=90, color="black", ha="center", va="bottom", fontsize=8)
+            
+            plt.xlabel("値")
+            plt.ylabel("確率密度")
+            plt.title(f"確率密度分布 ({col_label})")
+            plt.legend()
+            buf_pdf = io.BytesIO()
+            plt.savefig(buf_pdf, format="png")
+            plt.close()
+            buf_pdf.seek(0)
+            image_pdf = Image.open(buf_pdf)
+            density_images.append(image_pdf)
+            log_messages += f"{col_label} の確率密度分布描画完了。\n"
+        except Exception as e:
+            log_messages += f"エラー: {col_label} の確率密度分布描画中に問題が発生しました: {e}\n"
 
     if results:
         dt_now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -183,7 +236,7 @@ def run_analysis(uploaded_file, selected_columns, spec_table):
     else:
         log_messages += "エラー: 解析対象の列から有効なデータが得られませんでした。\n"
 
-    return log_messages, hist_images, qq_images, excel_file, excel_preview
+    return log_messages, hist_images, qq_images, density_images, excel_file, excel_preview
 
 # -------------------------
 # Gradio UI の構築
@@ -208,6 +261,8 @@ with gr.Blocks() as demo:
             hist_gallery = gr.Gallery(label="ヒストグラム", show_label=True)
             qq_gallery = gr.Gallery(label="QQプロット", show_label=True)
         with gr.Row():
+            density_gallery = gr.Gallery(label="確率密度分布", show_label=True)
+        with gr.Row():
             excel_file_box = gr.File(label="出力されたExcelファイルを開く")
             excel_preview_box = gr.DataFrame(label="Excelファイルの内容プレビュー", interactive=False)
         
@@ -221,7 +276,7 @@ with gr.Blocks() as demo:
         run_button.click(
             fn=run_analysis, 
             inputs=[file_input, column_dropdown, spec_df],
-            outputs=[result_box, hist_gallery, qq_gallery, excel_file_box, excel_preview_box]
+            outputs=[result_box, hist_gallery, qq_gallery, density_gallery, excel_file_box, excel_preview_box]
         )
     
     gr.Markdown("©2025 @KotaOoka")

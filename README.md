@@ -24,7 +24,7 @@ CpkTools WebUI は、Excel ファイルから工程能力解析を実施でき�
 
 - **OS**: Windows  
 - **Python**: Python 3.x  
-- **必要な Python ライブラリ**: pandas, pyarrow, matplotlib, scipy, Pillow, gradio
+- **必要な Python ライブラリ**: pandas, pyarrow, matplotlib, scipy, Pillow, gradio, numpy
 
 ## インストール方法
 

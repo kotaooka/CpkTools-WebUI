@@ -5,3 +5,4 @@ matplotlib
 pillow
 gradio
 openpyxl
+numpy
