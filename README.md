@@ -22,8 +22,7 @@ CpkTools WebUI は、Excel ファイルから工程能力解析を実施でき�
 - [Third Party Libraries & Licenses](#third-party-libraries-&-licenses)
 
 ## 実行例
-以下は本ツールを実行した際の画面例です。  
-（グラフ画像は、ヒストグラム、QQ プロット、確率密度分布、X-bar チャート／I チャート、R チャート／MR チャート、s 管理図を含みます。）
+以下は本ツールを実行した際の画面例と出力されるグラフです。
 <!-- 1枚目の画像 -->
 <p align="center">
   <img src="https://github.com/user-attachments/assets/583016ca-24cb-40ec-9f3e-23e24d2e8fc2" alt="実行例1" width="500">
