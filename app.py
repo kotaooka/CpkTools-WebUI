@@ -66,7 +66,7 @@ def run_analysis(uploaded_file, selected_columns, spec_table):
     excel_file = None     # 出力した Excel ファイルのパス
     excel_preview = None  # 統計結果の DataFrame
     results = []          # 解析結果を格納するリスト
-    
+
     if uploaded_file is None:
         return "エラー: ファイルが選択されていません", None, None, None, None, None
     try:
@@ -221,6 +221,15 @@ def run_analysis(uploaded_file, selected_columns, spec_table):
     return log_messages, hist_images, qq_images, density_images, excel_file, excel_preview
 
 # -------------------------
+# Outputフォルダを開く関数（Windows向け）
+def open_output_folder():
+    folder_path = os.path.abspath(OUTPUT_DIR)
+    try:
+        os.startfile(folder_path)  # Windowsの場合、エクスプローラーでフォルダを開く
+    except Exception as e:
+        print(f"フォルダを開くのに失敗しました: {e}")
+
+# -------------------------
 # Gradio UI の構築
 with gr.Blocks() as demo:
     gr.Markdown("# 🏭 CpkTools-WebUI 工程能力解析ツール")
@@ -248,6 +257,9 @@ with gr.Blocks() as demo:
         with gr.Row():
             excel_file_box = gr.File(label="出力されたExcelファイルを開く")
             excel_preview_box = gr.DataFrame(label="Excelファイルの内容プレビュー", interactive=False)
+        # 追加: 結果表示テキストは不要なので、ボタンのみ配置
+        with gr.Row():
+            open_folder_button = gr.Button("Outputフォルダを開く")
         
         file_input.change(fn=update_preview, inputs=file_input, outputs=[preview_df, column_dropdown])
         column_dropdown.change(fn=update_spec_df_with_checkbox, 
@@ -261,6 +273,7 @@ with gr.Blocks() as demo:
             inputs=[file_input, column_dropdown, spec_df],
             outputs=[result_box, hist_gallery, qq_gallery, density_gallery, excel_file_box, excel_preview_box]
         )
+        open_folder_button.click(fn=open_output_folder, inputs=[], outputs=[])
     
     gr.Markdown("©2025 @KotaOoka")
     
