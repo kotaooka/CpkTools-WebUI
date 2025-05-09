@@ -70,8 +70,8 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
     hist_images = []      # ヒストグラム
     qq_images = []        # QQプロット
     density_images = []   # 確率密度分布
-    xbar_images = []      # X-barチャート または Iチャート
-    r_images = []         # Rチャート または MRチャート
+    xbar_images = []      # X-bar管理図 または I管理図
+    r_images = []         # R管理図 または MR管理図
     s_images = []         # s管理図（サブグループサイズ>=2の場合のみ）
     excel_file = None     # Excel出力ファイルパス
     excel_preview = None  # Excel出力結果プレビュー
@@ -260,14 +260,14 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
             except Exception as e:
                 log_messages += f"エラー: {col_label} の確率密度分布描画中に問題が発生しました: {e}\n"
 
-        # --- サブグループチャートの生成 ---
+        # --- サブグループ管理図の生成 ---
         if subgroup_size == 1:
             individuals = data.values
             n_individuals = len(individuals)
             if n_individuals < 1:
-                log_messages += f"警告: {col_label} のデータ点数が不足しているため、チャートを生成できませんでした。\n"
+                log_messages += f"警告: {col_label} のデータ点数が不足しているため、管理図を生成できませんでした。\n"
             else:
-                # Iチャートの計算
+                # I管理図の計算
                 i_bar = np.mean(individuals)
                 if n_individuals >= 2:
                     moving_ranges = [abs(individuals[j] - individuals[j-1]) for j in range(1, n_individuals)]
@@ -289,15 +289,15 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
                         plt.axhline(LCL_i, color='red', linestyle='--', label='LCL')
                         plt.xlabel('データ点')
                         plt.ylabel('値')
-                        plt.title(f"Iチャート ({col_label})")
+                        plt.title(f"I管理図 ({col_label})")
                         plt.legend()
                         i_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_i_{col_label}.jpg")
                         plt.savefig(i_filename, format="jpg")
                         plt.close()
                         xbar_images.append(i_filename)
-                        log_messages += f"{col_label} のIチャート生成完了。\n"
+                        log_messages += f"{col_label} のI管理図生成完了。\n"
                     except Exception as e:
-                        log_messages += f"エラー: {col_label} のIチャート生成中に問題が発生しました: {e}\n"
+                        log_messages += f"エラー: {col_label} のI管理図生成中に問題が発生しました: {e}\n"
                 if show_r:
                     if n_individuals >= 2:
                         try:
@@ -308,17 +308,17 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
                             plt.axhline(UCL_mr, color='red', linestyle='--', label='UCL')
                             plt.xlabel('データ点 (2番目以降)')
                             plt.ylabel('移動範囲')
-                            plt.title(f"MRチャート ({col_label})")
+                            plt.title(f"MR管理図 ({col_label})")
                             plt.legend()
                             mr_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_mr_{col_label}.jpg")
                             plt.savefig(mr_filename, format="jpg")
                             plt.close()
                             r_images.append(mr_filename)
-                            log_messages += f"{col_label} のMRチャート生成完了。\n"
+                            log_messages += f"{col_label} のMR管理図生成完了。\n"
                         except Exception as e:
-                            log_messages += f"エラー: {col_label} のMRチャート生成中に問題が発生しました: {e}\n"
+                            log_messages += f"エラー: {col_label} のMR管理図生成中に問題が発生しました: {e}\n"
                     else:
-                        log_messages += f"警告: {col_label} のデータ点数が不十分なため、MRチャートを生成できませんでした。\n"
+                        log_messages += f"警告: {col_label} のデータ点数が不十分なため、MR管理図を生成できませんでした。\n"
                 if show_s:
                     log_messages += f"警告: サブグループサイズが1のため、s管理図は生成できません。\n"
         elif subgroup_size >= 2 and (show_xbar or show_r or show_s):
@@ -366,13 +366,13 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
                                 plt.axhline(current_lsl, color='cyan', linestyle='-.', label='規格下限値')
                             plt.xlabel('サブグループ')
                             plt.ylabel('平均値')
-                            plt.title(f"X-barチャート ({col_label})")
+                            plt.title(f"X-bar管理図 ({col_label})")
                             plt.legend()
                             xbar_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_xbar_{col_label}.jpg")
                             plt.savefig(xbar_filename, format="jpg")
                             plt.close()
                             xbar_images.append(xbar_filename)
-                            log_messages += f"{col_label} のX-barチャート生成完了。\n"
+                            log_messages += f"{col_label} のX-bar管理図生成完了。\n"
 
                         if show_r:
                             plt.figure()
@@ -382,13 +382,13 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
                             plt.axhline(D3 * R_bar, color='red', linestyle='--', label='LCL')
                             plt.xlabel('サブグループ')
                             plt.ylabel('レンジ')
-                            plt.title(f"Rチャート ({col_label})")
+                            plt.title(f"R管理図 ({col_label})")
                             plt.legend()
                             r_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_r_{col_label}.jpg")
                             plt.savefig(r_filename, format="jpg")
                             plt.close()
                             r_images.append(r_filename)
-                            log_messages += f"{col_label} のRチャート生成完了。\n"
+                            log_messages += f"{col_label} のR管理図生成完了。\n"
 
                         if show_s and subgroup_stds:
                             s_bar = np.mean(subgroup_stds)
@@ -418,11 +418,11 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
                             if show_s:
                                 log_messages += f"警告: {col_label} のサブグループ標準偏差の計算に十分なデータがないため、s管理図を生成できませんでした。\n"
                     else:
-                        log_messages += f"警告: サブグループサイズ {subgroup_size} に対するチャートファクターが見つからなかったため、X-barチャートとRチャートをスキップします。\n"
+                        log_messages += f"警告: サブグループサイズ {subgroup_size} に対する管理図ファクターが見つからなかったため、X-bar管理図とR管理図をスキップします。\n"
                 else:
-                    log_messages += f"警告: {col_label} のデータ点数がサブグループサイズより少ないため、X-barチャート、Rチャートおよびs管理図を生成できませんでした。\n"
+                    log_messages += f"警告: {col_label} のデータ点数がサブグループサイズより少ないため、X-bar管理図、R管理図およびs管理図を生成できませんでした。\n"
             except Exception as e:
-                log_messages += f"エラー: {col_label} のX-bar/R/sチャート生成中に問題が発生しました: {e}\n"
+                log_messages += f"エラー: {col_label} のX-bar/R/s管理図生成中に問題が発生しました: {e}\n"
 
     if results:
         dt_now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -478,15 +478,15 @@ with gr.Blocks() as demo:
                 subgroup_size_slider = gr.Slider(
                     minimum=1, maximum=10, step=1, value=5,
                     label="サブグループサイズ",
-                    info="X-barチャート、Rチャート、s管理図作成時に用いるサブグループのサイズ。1の場合はIチャート/MRチャートを生成します。"
+                    info="X-bar管理図、R管理図、s管理図作成時に用いるサブグループのサイズ。1の場合はI管理図/MR管理図を生成します。"
                 )
             with gr.Row():
                 show_hist_checkbox = gr.Checkbox(label="ヒストグラムを出力", value=True)
                 show_qq_checkbox = gr.Checkbox(label="QQプロットを出力", value=True)
                 show_density_checkbox = gr.Checkbox(label="確率密度分布を出力", value=True)
             with gr.Row():
-                show_xbar_checkbox = gr.Checkbox(label="X-barチャート／Iチャートを出力", value=True)
-                show_r_checkbox = gr.Checkbox(label="Rチャート／MRチャートを出力", value=True)
+                show_xbar_checkbox = gr.Checkbox(label="X-bar管理図／I管理図を出力", value=True)
+                show_r_checkbox = gr.Checkbox(label="R管理図／MR管理図を出力", value=True)
                 show_s_checkbox = gr.Checkbox(label="s管理図を出力", value=True)
             with gr.Row():
                 # 新たに標準偏差の計算方法を選択するラジオボタンを追加
@@ -503,8 +503,8 @@ with gr.Blocks() as demo:
             with gr.Row():
                 density_gallery = gr.Gallery(label="確率密度分布", show_label=True, type="file")
             with gr.Row():
-                xbar_gallery = gr.Gallery(label="X-barチャート／Iチャート", show_label=True, type="file")
-                r_gallery = gr.Gallery(label="Rチャート／MRチャート", show_label=True, type="file")
+                xbar_gallery = gr.Gallery(label="X-bar管理図／I管理図", show_label=True, type="file")
+                r_gallery = gr.Gallery(label="R管理図／MR管理図", show_label=True, type="file")
             with gr.Row():
                 s_gallery = gr.Gallery(label="s管理図", show_label=True, type="file")
             with gr.Row():
@@ -606,9 +606,9 @@ with gr.Blocks() as demo:
         - **ポイント**:  
         平均値、±3σの位置がどのように評価されるかで、工程のリスク評価に役立ちます。
 
-        ### 2.4 X-barチャートとIチャート
+        ### 2.4 X-bar管理図とI管理図
 
-        #### X-barチャート
+        #### X-bar管理図
         - **目的**:  
         複数の測定値から算出されたサブグループの平均値を時系列でプロットし、工程の中心位置とばらつきを監視します。
         - **見方**:  
@@ -619,18 +619,18 @@ with gr.Blocks() as demo:
         - 大部分の点が管理限界内にあるか  
         - 連続した偏りや急激な変動の兆候がないか
 
-        #### Iチャート (Individuals Chart)
+        #### I管理図 (Individuals Chart)
         - **目的**:  
         個々の測定値をそのままプロットし、リアルタイムの工程変動を把握します。
         - **見方**:  
         - 横軸: 各データ取得の順序  
         - 縦軸: 各測定値  
-        - 隣接するデータ点の変動（移動範囲：MRチャート）と連動して評価される。
+        - 隣接するデータ点の変動（移動範囲：MR管理図）と連動して評価される。
         - **ポイント**:  
         - 外れ値や急激な変動が確認できるか  
         - リアルタイム性の高いデータ監視に適しているが、外れ値の影響を受けやすい
 
-        ### 2.5 Rチャート / MRチャート
+        ### 2.5 R管理図 / MR管理図
         - **目的**:  
         サブグループや隣接するデータの範囲（または移動範囲）から、工程内のばらつきを定量的に評価します。
         - **見方**:  
@@ -695,7 +695,7 @@ with gr.Blocks() as demo:
         ## 4. サブグループサイズとA2係数の関係
 
         ### 4.1 A2係数の役割と算出方法
-        - **A2係数**は、X-barチャートでサブグループごとの平均レンジから管理限界を設定するための係数です。  
+        - **A2係数**は、X-bar管理図でサブグループごとの平均レンジから管理限界を設定するための係数です。  
         管理限界は次の式で計算されます。
         ``` 
         管理限界 = 全体平均 ± (A2 × サブグループ平均レンジ)
@@ -736,13 +736,13 @@ with gr.Blocks() as demo:
         Cpk は工程の平均の位置も評価するため、偏りがある場合はその要因の是正を検討してください。
 
         - **管理図の総合活用**:  
-        X-barチャート、Iチャート、R/MRチャート、s管理図を併用することで、工程の状態を多角的に評価し、早期に異常を発見することが可能です。
+        X-bar管理図、I管理図、R/MR管理図、s管理図を併用することで、工程の状態を多角的に評価し、早期に異常を発見することが可能です。
 
         ### まとめ
         - 基本統計量（平均、標準偏差、尖度、歪度）と工程能力指数（Cp、Cpk、Cp1）を理解し、それぞれの評価指標と理論値を把握することが重要です。  
         - 各グラフの見方（ヒストグラム、QQプロット、確率密度分布、各種管理図）を理解した上で、実測データと理論値を比較し、工程の安定性や改善すべき箇所を判断します。  
         - 特に片側規格の場合のCp1は、理論上約1350 ppmの不良率が期待されるものの、実際には工程の偏りや分布の非正規性を考慮して運用する必要があります。  
-        - サブグループサイズとA2係数の関係を正しく把握することで、X-barチャートによる管理限界の設定と異常検出の精度が向上します.
+        - サブグループサイズとA2係数の関係を正しく把握することで、X-bar管理図による管理限界の設定と異常検出の精度が向上します.
                 """
             )
 
