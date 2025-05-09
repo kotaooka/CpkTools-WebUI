@@ -1,42 +1,50 @@
 # CpkTools-WebUI
 
 CpkTools WebUI は、Excel ファイルから工程能力解析を実施できるツールです。  
-ユーザーは Excel ファイルをアップロードし、解析対象の列を選択、各列ごとの上限規格値と下限規格値を入力して、  
-各種統計値（最大値、最小値、標準偏差、平均値、Cp、Cpk、尖度、歪度）を計算および
-グラフ（ヒストグラム、QQプロット、確率密度分布、Xbar管理図、R管理図、S管理図）の生成を行います。  
-結果は Excel ファイルに出力され、Web UI 上にプレビュー表示されます。
+ユーザーは Excel ファイルをアップロードし、解析対象の列を選択するとともに、各列ごとの上限規格値と下限規格値を入力して、  
+各種統計量（最大値、最小値、標準偏差、平均値、Cp、Cpk、尖度、歪度）の計算および  
+グラフ（ヒストグラム、QQ プロット、確率密度分布、X-bar チャート／I チャート、R チャート／MR チャート、s 管理図）の生成を行います。  
+生成された結果は Excel ファイルに出力されるほか、Web UI 上で各グラフのプレビュー表示や結果の確認が可能です。
+
+さらに、本ツールには品質管理の初学者向けの解説タブが用意されており、各統計量やグラフの意味、計算方法、  
+実務上の活用ポイントなどを分かりやすく解説しています。
 
 ## 目次
 - [実行例](#実行例)
 - [要求環境](#要求環境)
 - [インストール方法](#インストール方法)
-  - [1. Pythonのインストール](#1-pythonのインストール)
+  - [1. Python のインストール](#1-python-のインストール)
   - [2. リリースファイルのダウンロード](#2-リリースファイルのダウンロード)
-  - [3. setup.batを実行して仮想環境の構築とライブラリのインストール](#3-setupbatを実行して仮想環境の構築とライブラリのインストール)
-- [CpkTools-WebUIの起動と使用方法](#cpktools-webuiの起動と使用方法)
+  - [3. setup.bat を実行して仮想環境の構築とライブラリのインストール](#3-setupbat-を実行して仮想環境の構築とライブラリのインストール)
+- [CpkTools-WebUI の起動と使用方法](#cpktools-webui-の起動と使用方法)
 - [注意事項](#注意事項)
-- [ライセンス](#ライセンス)
-
+- [License](#License)
+- [Third-Party Libraries & Licenses](#third-party-libraries-&-licenses)
 
 ## 実行例
-![image](https://github.com/user-attachments/assets/583016ca-24cb-40ec-9f3e-23e24d2e8fc2)
-![image (2)](https://github.com/user-attachments/assets/e69b42d6-0e36-4831-a9ea-69fc489d0f78)
-![image (3)](https://github.com/user-attachments/assets/ce5abb5c-5743-4aa2-811a-1961fbf9d42c)
-![image (1)](https://github.com/user-attachments/assets/2964abc7-7be4-4afe-9249-e32083340aff)
-![20250509_125724_xbar_A列 (0 464651124718277)](https://github.com/user-attachments/assets/c146e538-e294-4c54-8ca2-75958a7e3c7d)
-![20250509_125724_r_A列 (0 464651124718277)](https://github.com/user-attachments/assets/2714d2ce-a681-4f95-ab46-ba3a901ccc24)
-![20250509_125946_s_A列 (0 464651124718277)](https://github.com/user-attachments/assets/964ef55c-b964-4d26-aa86-e95288c38409)
+以下は本ツールを実行した際の画面例です。  
+（グラフ画像は、ヒストグラム、QQ プロット、確率密度分布、X-bar チャート／I チャート、R チャート／MR チャート、s 管理図を含みます。）
 
+![実行例1](https://github.com/user-attachments/assets/583016ca-24cb-40ec-9f3e-23e24d2e8fc2)  
+![実行例2](https://github.com/user-attachments/assets/e69b42d6-0e36-4831-a9ea-69fc489d0f78)  
+![実行例3](https://github.com/user-attachments/assets/ce5abb5c-5743-4aa2-811a-1961fbf9d42c)  
+![実行例4](https://github.com/user-attachments/assets/2964abc7-7be4-4afe-9249-e32083340aff)  
+![X-bar チャート例](https://github.com/user-attachments/assets/c146e538-e294-4c54-8ca2-75958a7e3c7d)  
+![R チャート例](https://github.com/user-attachments/assets/2714d2ce-a681-4f95-ab46-ba3a901ccc24)  
+![s 管理図例](https://github.com/user-attachments/assets/964ef55c-b964-4d26-aa86-e95288c38409)
 
 ## 要求環境
 
 - **OS**: Windows  
 - **Python**: Python 3.x  
-- **必要な Python ライブラリ**: pandas, pyarrow, matplotlib, scipy, Pillow, gradio, numpy
+- **必要な Python ライブラリ**:  
+  pandas, pyarrow, matplotlib, scipy, Pillow, gradio, numpy
+
+※ 本ツールは Gradio を利用した Web ベースのユーザーインターフェースで動作します。
 
 ## インストール方法
 
-### 1. Pythonのインストール
+### 1. Python のインストール
 
 Python をインストールしていない場合は、以下のリンクから最新の Python 3.x をダウンロードしてください。  
 ※ インストール時に「Add Python to PATH」にチェックを入れることを推奨します。
@@ -48,66 +56,57 @@ Python をインストールしていない場合は、以下のリンクから�
 本プロジェクトの最新リリースは [GitHub Releases](https://github.com/kotaooka/CpkTools-WebUI/releases) ページからダウンロードできます。  
 ダウンロードした ZIP ファイルを展開し、任意のフォルダ（例：`D:\CpkTools-WebUI`）に保存してください。
 
-### 3. setup.batを実行して仮想環境の構築とライブラリのインストール
+### 3. setup.bat を実行して仮想環境の構築とライブラリのインストール
 
 ダウンロードまたは解凍したプロジェクトフォルダ内にある `setup.bat` を実行します。  
 このバッチファイルは、プロジェクト専用の Python 仮想環境を作成し、必要なライブラリのインストールを自動で行います。
 
-## CpkTools-WebUIの起動と使用方法
+## CpkTools-WebUI の起動と使用方法
 
-### 1. CpkTools-Webui.batを実行してアプリケーションを起動
+### 1. CpkTools-WebUI.bat を実行してアプリケーションを起動
 
-同じフォルダ内にある `CpkTools-WebUI.bat` を実行することで、アプリケーションが起動します。  
-実行後、ブラウザが自動的に開き、**Gradio** を用いたユーザーインターフェースが表示されます。
+プロジェクトフォルダ内にある `CpkTools-WebUI.bat` を実行することで、アプリケーションが起動します。  
+実行後、ブラウザが自動的に開き、Gradio を用いたインターフェースが表示されます。  
+（プロキシ設定が必要な場合は、`CpkTools-WebUI.bat` に適宜プロキシ設定用の環境変数のコードを追加してください。）
 
-**プロキシ設定が必要な環境の場合はCpkTools-WebUI.batファイルに以下のコードを追加してください。**
-```
-  set HTTP_PROXY=http://あなたのアドレス:ポート番号
-  set HTTPS_PROXY=https://あなたのアドレス:ポート番号
-  set NO_PROXY=localhost,127.0.0.1
-```
+### 2. Excel ファイルのアップロードとプレビュー
 
-### 2. Excel ファイルのアップロード
+- 「**Excel ファイル**」アップロードボックスに対象の Excel ファイル（`.xlsx` または `.xls`）を選択します。  
+- アップロード後、ファイルの先頭 5 行がプレビュー表示され、利用可能な列がドロップダウンリストに表示されます。  
+- オプションとして「**先頭行をデータとして扱う**」チェックボックスにより、Excel の先頭行も解析対象のデータとして読み込むことが可能です。
 
-「**Excelファイル**」アップロードボックスに対象の Excel ファイル（`.xlsx` または `.xls`）を選択してください。  
-アップロード後、ファイルの先頭 5 行がプレビュー表示され、利用可能な列がドロップダウンリストに表示されます。
+### 3. 解析対象の列選択と規格値入力
 
-### 3. 解析対象の列選択
+- 表示されたドロップダウンリストから、解析対象となる列（例：A列、B列など）を複数選択してください。  
+- 選択した列に基づいて、自動生成される「**各列の規格値入力**」テーブルに、各列ごとの上限規格値と下限規格値を入力します。  
+- すべての列で同一の規格値を使用する場合は、「**すべての列の規格値を同じにする**」チェックボックスを ON にすると、1 列目の規格値が自動的に全列にコピーされます。
 
-表示されたドロップダウンリストから、**解析対象の列**を選択してください（複数選択可）。
-![image](https://github.com/user-attachments/assets/114ba46f-20b5-48e4-b101-94b28200d118)
+### 4. サブグループサイズと標準偏差計算方法の選択
 
+- サブグループサイズは、1 ～ 10 の範囲で設定可能です。  
+  - **1** を選択すると、I チャートおよび MR チャート（個々のデータに基づく管理図）が生成されます。  
+  - **2 以上** を選択すると、X-bar チャート／R チャートおよび十分なデータがある場合は s 管理図が生成されます。  
+- また、標準偏差の計算方法として「サンプル標準偏差」または「母集団標準偏差」から選択できます。
 
-### 4. 各列の規格値入力
+### 5. 解析開始と結果の確認
 
-選択した列に基づいて、下部に自動生成される「**各列の規格値入力**」テーブルが表示されます。  
-テーブルには以下の項目が含まれます：
+- 入力内容に問題がなければ、「**解析開始**」ボタンをクリックします。  
+- 各列に対して、統計量の計算およびグラフの生成が実行され、解析結果のログが画面上に表示されます。  
+- 統計結果は、Web UI 上の結果プレビューおよび Excel プレビュー領域に表示され、生成された Excel ファイルやグラフは `output` フォルダに保存されます。  
+- Web UI 上からグラフ（ヒストグラム、QQ プロット、確率密度分布、X-bar／I チャート、R／MR チャート、s 管理図）のプレビューを確認することができ、また各ファイルはダウンロードすることも可能です。  
+- ※ s 管理図に関しては、各サブグループで十分なデータ（2点以上）があるグループのみをプロットする仕組みにより、データ点数の不足によるエラーが回避されています。
 
-- **解析対象**: 選択された列名  
-- **規格上限値**: 各列ごとの上限規格値  
-- **規格下限値**: 各列ごとの下限規格値
+### 6. 出力フォルダの確認
 
-すべての列で同一の規格値を使用する場合は、「**すべての列の規格値を同じにする**」チェックボックスを ON にしてください。  
-チェックボックスが有効になると、**1 列目の規格値が自動的に全列にコピー**されます。
-
-![image](https://github.com/user-attachments/assets/cbfdd102-3840-4a97-aea2-0e2b37fe10f5)
-
-
-### 5. 解析開始
-
-入力内容に問題がなければ、「**解析開始**」ボタンをクリックしてください。  
-すると、各列に対する統計計算（**最大値、最小値、標準偏差、平均値、Cp、Cpk、尖度、歪度**）と**グラフ生成**が行われ、解析結果のログが画面上に表示されます。
-
-### 6. 結果の確認とダウンロード
-
-- 統計結果は、画面上の**結果プレビュー**と**Excel プレビュー領域**に表示されます。  
-- 生成された Excel ファイルとグラフは、`output`フォルダに出力され、**ダウンロードリンク**からも取得できます。  
-- 各列の**ヒストグラム**と**QQ プロット**と**確率密度分布**も表示され、解析内容を視覚的に確認できます。
+- 出力されたグラフや Excel ファイルは、`output` フォルダに保存されます。  
+- Web UI 上の「Outputフォルダを開く」ボタンを利用すると、Windows のエクスプローラーで出力フォルダが自動的に開きます。
 
 ## 注意事項
 
-- アップロードする Excel ファイルに**有効なデータ**が含まれていること、解析対象の列に**欠損値がない**ことを確認してください。
-- 規格値入力は**正しい数値形式**で行ってください。すべての列で同じ規格値を使用する場合は、まず**1 列目に正確な値**を入力してからチェックボックスを ON にしてください。
+- アップロードする Excel ファイルに有効なデータが含まれていること、また解析対象の列に欠損値が極力ないことを確認してください。（欠損値は自動的に除外されますが、連続した欠損データの場合は注意が必要です。）  
+- 規格値は正しい数値形式で入力してください。すべての列で同じ規格値を使用する場合は、まず 1 列目に正確な値を入力してからチェックボックスを ON にしてください。  
+- サブグループサイズの設定は、解析対象のデータ数に応じた適切な値を選択する必要があります。  
+- 本ツールは Gradio を用いた Web UI で動作するため、ブラウザのポップアップやプロキシ設定など、環境に応じた調整が必要な場合があります。
 
 ## License
 
@@ -134,7 +133,7 @@ This project makes use of several open source libraries. Please note the followi
   View the full license [here](https://matplotlib.org/stable/users/license.html).
 
 - **pillow**  
-  Licensed under the Historical PIL License (a variant of an open source license similar to BSD).  
+  Licensed under the Historical PIL License.  
   View details [here](https://github.com/python-pillow/Pillow/blob/main/LICENSE).
 
 - **gradio**  
@@ -143,8 +142,9 @@ This project makes use of several open source libraries. Please note the followi
 
 - **openpyxl**  
   Licensed under the MIT License.  
-  View license details [here](https://openpyxl.readthedocs.io/en/stable/license.html).
+  View details [here](https://openpyxl.readthedocs.io/en/stable/license.html).
 
 - **numpy**  
   Licensed under the BSD License.  
   View the full license [here](https://github.com/numpy/numpy/blob/main/LICENSE.txt).
+
