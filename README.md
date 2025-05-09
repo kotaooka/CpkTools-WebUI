@@ -65,6 +65,15 @@ Python をインストールしていない場合は、以下のリンクから�
 本プロジェクトの最新リリースは [GitHub Releases](https://github.com/kotaooka/CpkTools-WebUI/releases) ページからダウンロードできます。  
 ダウンロードした ZIP ファイルを展開し、任意のフォルダ（例：`D:\CpkTools-WebUI`）に保存してください。
 
+#### Gitリポジトリからのダウンロード（オプション）
+
+Git を使用してリポジトリを直接クローンすることも可能です。以下のコマンドをターミナルやコマンドプロンプトで実行してください:
+`git clone https://github.com/kotaooka/CpkTools-WebUI.git`
+
+既にリポジトリをクローン済みの場合、最新のアップデートはプロジェクトフォルダ内で以下のコマンドを実行することで取得できます:
+`git pull`
+
+
 ### 3. setup.bat を実行して仮想環境の構築とライブラリのインストール
 
 解凍したプロジェクトフォルダ内にある `setup.bat` を実行します。  
