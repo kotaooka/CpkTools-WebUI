@@ -24,14 +24,39 @@ CpkTools WebUI は、Excel ファイルから工程能力解析を実施でき�
 ## 実行例
 以下は本ツールを実行した際の画面例です。  
 （グラフ画像は、ヒストグラム、QQ プロット、確率密度分布、X-bar チャート／I チャート、R チャート／MR チャート、s 管理図を含みます。）
+<!-- 1枚目の画像 -->
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/583016ca-24cb-40ec-9f3e-23e24d2e8fc2" alt="実行例1" width="500">
+</p>
 
-![実行例1](https://github.com/user-attachments/assets/583016ca-24cb-40ec-9f3e-23e24d2e8fc2)  
-![実行例2](https://github.com/user-attachments/assets/e69b42d6-0e36-4831-a9ea-69fc489d0f78)  
-![実行例3](https://github.com/user-attachments/assets/ce5abb5c-5743-4aa2-811a-1961fbf9d42c)  
-![実行例4](https://github.com/user-attachments/assets/2964abc7-7be4-4afe-9249-e32083340aff)  
-![X-bar チャート例](https://github.com/user-attachments/assets/c146e538-e294-4c54-8ca2-75958a7e3c7d)  
-![R チャート例](https://github.com/user-attachments/assets/2714d2ce-a681-4f95-ab46-ba3a901ccc24)  
-![s 管理図例](https://github.com/user-attachments/assets/964ef55c-b964-4d26-aa86-e95288c38409)
+<!-- 2枚目以降のグリッドを中央揃えに -->
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="https://github.com/user-attachments/assets/e69b42d6-0e36-4831-a9ea-69fc489d0f78" alt="実行例2" width="250">
+      </td>
+      <td align="center">
+        <img src="https://github.com/user-attachments/assets/ce5abb5c-5743-4aa2-811a-1961fbf9d42c" alt="実行例3" width="250">
+      </td>
+      <td align="center">
+        <img src="https://github.com/user-attachments/assets/2964abc7-7be4-4afe-9249-e32083340aff" alt="実行例4" width="250">
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="https://github.com/user-attachments/assets/c146e538-e294-4c54-8ca2-75958a7e3c7d" alt="X-bar チャート例" width="250">
+      </td>
+      <td align="center">
+        <img src="https://github.com/user-attachments/assets/2714d2ce-a681-4f95-ab46-ba3a901ccc24" alt="R チャート例" width="250">
+      </td>
+      <td align="center">
+        <img src="https://github.com/user-attachments/assets/964ef55c-b964-4d26-aa86-e95288c38409" alt="s 管理図例" width="250">
+      </td>
+    </tr>
+  </table>
+</div>
+
 
 ## 要求環境
 
