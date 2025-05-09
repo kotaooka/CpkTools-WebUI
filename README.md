@@ -19,7 +19,7 @@ CpkTools WebUI は、Excel ファイルから工程能力解析を実施でき�
 - [CpkTools-WebUI の起動と使用方法](#cpktools-webui-の起動と使用方法)
 - [注意事項](#注意事項)
 - [License](#License)
-- [Third-Party Libraries & Licenses](#third-party-libraries-&-licenses)
+- [Third Party Libraries & Licenses](#third-party-libraries-&-licenses)
 
 ## 実行例
 以下は本ツールを実行した際の画面例です。  
