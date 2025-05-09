@@ -68,10 +68,14 @@ Python をインストールしていない場合は、以下のリンクから�
 #### Gitリポジトリからのダウンロード（オプション）
 
 Git を使用してリポジトリを直接クローンすることも可能です。以下のコマンドをターミナルやコマンドプロンプトで実行してください:
-`git clone https://github.com/kotaooka/CpkTools-WebUI.git`
+```
+git clone https://github.com/kotaooka/CpkTools-WebUI.git
+```
 
 既にリポジトリをクローン済みの場合、最新のアップデートはプロジェクトフォルダ内で以下のコマンドを実行することで取得できます:
-`git pull`
+```
+git pull
+```
 
 
 ### 3. setup.bat を実行して仮想環境の構築とライブラリのインストール
