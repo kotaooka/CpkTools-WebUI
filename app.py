@@ -328,13 +328,14 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
                     subgroup_means = []
                     subgroup_ranges = []
                     subgroup_stds = []
+                    valid_std_indices = []  # 標準偏差が計算できたグループのインデックスを記録
                     for j in range(n_groups):
                         subgroup = data.iloc[j * subgroup_size : min((j + 1) * subgroup_size, len(data))]
                         subgroup_means.append(np.mean(subgroup))
                         subgroup_ranges.append(np.max(subgroup) - np.min(subgroup))
                         if len(subgroup) >= 2:
-                            # ddof_value を用いてサブグループ標準偏差を計算
                             subgroup_stds.append(np.std(subgroup, ddof=ddof_value))
+                            valid_std_indices.append(j + 1)
                     xbar_bar = np.mean(subgroup_means)
                     R_bar = np.mean(subgroup_ranges)
                     chart_factors = {
@@ -399,7 +400,8 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
                                 LCL_s = 0
 
                             plt.figure()
-                            plt.plot(range(1, n_groups+1), subgroup_stds, marker='o', linestyle='-', color='blue', label='サブグループ標準偏差')
+                            # valid_std_indices と subgroup_stds の長さは揃っている
+                            plt.plot(valid_std_indices, subgroup_stds, marker='o', linestyle='-', color='blue', label='サブグループ標準偏差')
                             plt.axhline(s_bar, color='green', linestyle='--', label='全体平均標準偏差')
                             plt.axhline(UCL_s, color='red', linestyle='--', label='UCL')
                             plt.axhline(LCL_s, color='red', linestyle='--', label='LCL')
@@ -595,7 +597,7 @@ with gr.Blocks() as demo:
         - **ポイント**:  
         点が直線から大きく外れる場合、正規性に逸脱が見られる（外れ値の影響も示唆）。
 
-        ### 2.3 確率密度分布（Density Plot）
+        ### 2.3 確率密度分布（Density Plot） 
         - **目的**:  
         正規分布カーブと実際のデータ分布を比較し、平均値や±3σの位置に対するデータの分布状況を確認します。
         - **見方**:  
@@ -654,12 +656,12 @@ with gr.Blocks() as demo:
         ### 3.1 Cp と Cpk の概要
         - **Cp**:  
         **定義**: 規格幅に対する工程変動の小ささを評価します。  
-        ```
+        ``` 
         Cp = (規格上限値 - 規格下限値) / (6 * 標準偏差)
         ```
         - **Cpk**:  
         **定義**: 工程のばらつきに加えて、工程の平均（中心）が仕様範囲内のどちらかの限界（USLまたはLSL）からどれだけずれているかも考慮し、実際の工程能力を評価する指標です。
-        ```
+        ``` 
         Cpk = min((規格上限値 - 平均値) / (3 * 標準偏差), (平均値 - 規格下限値) / (3 * 標準偏差))
         ```
         - **解釈**:  
@@ -668,22 +670,22 @@ with gr.Blocks() as demo:
         ### 3.2 不良率の計算式
         - **両側規格の場合 (Cp1)**  
         正規分布を前提とすると、平均値から±3σ内に約99.73%のデータが含まれるため、不良率は 
-        ```
+        ``` 
         不良率 = 2 × (1 - Φ(3)) ≈ 0.27%
         ```
         ここで、Φ(3)は標準正規分布における平均から3σまでの累積確率を示し、その値はおよそ0.99865です。すなわち、
-        ```
+        ``` 
         2×(1−0.99865)≈0.27%
         ```
         この計算式により、両側規格の場合の工程内での不良品の発生率がおおよそ0.27%であると導かれます。
 
         - **片側規格の場合 (Cp1)**
         - **Cp1の計算式 (上側規格のみの例)**  
-        ```
+        ``` 
         Cp1 = (規格上限値 - 平均値) / (3 × σ)
         ```
         - この場合、不良率は  
-        ```
+        ``` 
         不良率 = 1 - Φ(3) ≈ 0.135%
         ```
         ※ これらは理論上の値であり、実際の工程ではプロセスの偏りや非正規性により変動します。
@@ -695,7 +697,7 @@ with gr.Blocks() as demo:
         ### 4.1 A2係数の役割と算出方法
         - **A2係数**は、X-barチャートでサブグループごとの平均レンジから管理限界を設定するための係数です。  
         管理限界は次の式で計算されます。
-        ```
+        ``` 
         管理限界 = 全体平均 ± (A2 × サブグループ平均レンジ)
         ```
         ### 4.2 サブグループサイズとA2係数の関係
@@ -741,11 +743,10 @@ with gr.Blocks() as demo:
         - 各グラフの見方（ヒストグラム、QQプロット、確率密度分布、各種管理図）を理解した上で、実測データと理論値を比較し、工程の安定性や改善すべき箇所を判断します。  
         - 特に片側規格の場合のCp1は、理論上約1350 ppmの不良率が期待されるものの、実際には工程の偏りや分布の非正規性を考慮して運用する必要があります。  
         - サブグループサイズとA2係数の関係を正しく把握することで、X-barチャートによる管理限界の設定と異常検出の精度が向上します.
-            """
-        )
-
-
+                """
+            )
 
     gr.Markdown("©2025 @KotaOoka")
     
 demo.launch(inbrowser=True)
+
