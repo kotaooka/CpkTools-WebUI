@@ -112,7 +112,7 @@ Python をインストールしていない場合は、以下のリンクから�
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Third-Party Libraries & Licenses
+## Third Party Libraries & Licenses
 
 This project makes use of several open source libraries. Please note the following copyright information:
 
