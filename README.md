@@ -13,32 +13,38 @@
 以下は本ツールを実行した際の画面例と出力されるグラフです。
 <!-- 1枚目の画像 -->
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/583016ca-24cb-40ec-9f3e-23e24d2e8fc2" alt="実行例1" width="500">
+　<img src="https://github.com/user-attachments/assets/1dde2874-c85b-47fc-a0e3-163cd1768ba2" alt="実行例1" width="900">
+</p> 
+<p align="center">
+　<img src="https://github.com/user-attachments/assets/0ffade26-6b60-4da7-9119-be1adbf8e1e0" alt="実行例2" width="900">
 </p>
 
+<p align="center">
+　<img src="https://github.com/user-attachments/assets/68d4f84c-27f7-4fba-b8ce-1521eb720fdf" alt="Excel出力" width="900">
+</p>
 <!-- 2枚目以降のグリッドを中央揃えに -->
 <div align="center">
   <table>
     <tr>
       <td align="center">
-        <img src="https://github.com/user-attachments/assets/e69b42d6-0e36-4831-a9ea-69fc489d0f78" alt="実行例2" width="250">
+        <img src="https://github.com/user-attachments/assets/e69b42d6-0e36-4831-a9ea-69fc489d0f78" alt="ヒストグラム" width="250">
       </td>
       <td align="center">
-        <img src="https://github.com/user-attachments/assets/ce5abb5c-5743-4aa2-811a-1961fbf9d42c" alt="実行例3" width="250">
+        <img src="https://github.com/user-attachments/assets/ce5abb5c-5743-4aa2-811a-1961fbf9d42c" alt="QQプロット" width="250">
       </td>
       <td align="center">
-        <img src="https://github.com/user-attachments/assets/2964abc7-7be4-4afe-9249-e32083340aff" alt="実行例4" width="250">
+        <img src="https://github.com/user-attachments/assets/2964abc7-7be4-4afe-9249-e32083340aff" alt="確率密度分布" width="250">
       </td>
     </tr>
     <tr>
       <td align="center">
-        <img src="https://github.com/user-attachments/assets/c146e538-e294-4c54-8ca2-75958a7e3c7d" alt="X-bar 管理図例" width="250">
+        <img src="https://github.com/user-attachments/assets/c146e538-e294-4c54-8ca2-75958a7e3c7d" alt="X-bar 管理図" width="250">
       </td>
       <td align="center">
-        <img src="https://github.com/user-attachments/assets/2714d2ce-a681-4f95-ab46-ba3a901ccc24" alt="R 管理図例" width="250">
+        <img src="https://github.com/user-attachments/assets/2714d2ce-a681-4f95-ab46-ba3a901ccc24" alt="R 管理図" width="250">
       </td>
       <td align="center">
-        <img src="https://github.com/user-attachments/assets/964ef55c-b964-4d26-aa86-e95288c38409" alt="s 管理図例" width="250">
+        <img src="https://github.com/user-attachments/assets/964ef55c-b964-4d26-aa86-e95288c38409" alt="s 管理図" width="250">
       </td>
     </tr>
   </table>
