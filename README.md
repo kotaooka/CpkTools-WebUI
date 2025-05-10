@@ -6,6 +6,7 @@
 ## 🚀特徴
 - **簡単操作**: Excelファイルをアップロードして、解析対象と規格値を設定するだけ
 - **多彩な自動解析**: 統計量の計算とグラフ作成を瞬時に実施
+- **検定に対応**: F検定とT検定を簡単に実行可能
 - **柔軟な出力形式**: Excel出力と Web UI プレビューで結果確認が可能
 - **豊富なサポート情報**: 初心者でも安心の品質管理解説タブを完備
 
@@ -13,7 +14,8 @@
 以下は本ツールを実行した際の画面例と出力されるグラフです。
 <!-- 1枚目の画像 -->
 <p align="center">
-　<img src="https://github.com/user-attachments/assets/1dde2874-c85b-47fc-a0e3-163cd1768ba2" alt="実行例1" width="900">
+　<img src="https://github.com/user-attachments/assets/f6146377-cf43-4a8e-82f0-b4c12ab19054" alt="実行例1" width="900">
+
 </p> 
 <p align="center">
 　<img src="https://github.com/user-attachments/assets/0ffade26-6b60-4da7-9119-be1adbf8e1e0" alt="実行例2" width="900">
@@ -47,6 +49,17 @@
         <img src="https://github.com/user-attachments/assets/964ef55c-b964-4d26-aa86-e95288c38409" alt="s 管理図" width="250">
       </td>
     </tr>
+    <tr>
+      <td align="center">
+       <img src="https://github.com/user-attachments/assets/c17d8470-e59c-416f-bcd6-40e3c9d7fbe4" alt="s 管理図" width="250">
+      </td>
+      <td align="center">
+       <img src="https://github.com/user-attachments/assets/29d98946-c969-4da1-8388-e46b5b02d036" alt="s 管理図" width="250">
+      </td>
+      <td align="center">
+       <img src="https://github.com/user-attachments/assets/f0f0b6af-f961-41b2-8fda-837ea8a69a07" alt="s 管理図" width="250">
+      </td>    
+  </tr>
   </table>
 </div>
 
