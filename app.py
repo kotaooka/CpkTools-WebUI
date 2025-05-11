@@ -24,7 +24,6 @@ def get_version():
     except Exception:
         return "バージョン情報未設定"
 
-
 # -------------------------
 # 補助関数：選択された列に合わせて規格値テーブルを更新する（インタラクティブ対応）
 def update_spec_df_with_checkbox(selected_columns, same_spec, current_spec):
@@ -314,106 +313,6 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
                         log_messages += f"警告: {col_label} のデータ点数が不十分なため、MR管理図を生成できませんでした。\n"
                 if show_s:
                     log_messages += f"警告: サブグループサイズが1のため、s管理図は生成できません。\n"
-        elif subgroup_size >= 2 and (show_xbar or show_r or show_s):
-            try:
-                if len(data) >= subgroup_size:
-                    n_groups = int(np.ceil(len(data) / subgroup_size))
-                    subgroup_means = []
-                    subgroup_ranges = []
-                    subgroup_stds = []
-                    valid_std_indices = []
-                    for j in range(n_groups):
-                        subgroup = data.iloc[j * subgroup_size : min((j + 1) * subgroup_size, len(data))]
-                        subgroup_means.append(np.mean(subgroup))
-                        subgroup_ranges.append(np.max(subgroup) - np.min(subgroup))
-                        if len(subgroup) >= 2:
-                            subgroup_stds.append(np.std(subgroup, ddof=ddof_value))
-                            valid_std_indices.append(j + 1)
-                    xbar_bar = np.mean(subgroup_means)
-                    R_bar = np.mean(subgroup_ranges)
-                    chart_factors = {
-                        2: {"A2": 1.88, "D3": 0.0,   "D4": 3.267},
-                        3: {"A2": 1.023, "D3": 0.0,  "D4": 2.574},
-                        4: {"A2": 0.729, "D3": 0.0,  "D4": 2.282},
-                        5: {"A2": 0.577, "D3": 0.0,  "D4": 2.114},
-                        6: {"A2": 0.483, "D3": 0.0,  "D4": 2.004},
-                        7: {"A2": 0.419, "D3": 0.076,"D4": 1.924},
-                        8: {"A2": 0.373, "D3": 0.136,"D4": 1.864},
-                        9: {"A2": 0.337, "D3": 0.184,"D4": 1.816},
-                        10: {"A2": 0.308, "D3": 0.223,"D4": 1.777},
-                    }
-                    if subgroup_size in chart_factors:
-                        A2 = chart_factors[subgroup_size]["A2"]
-                        D3 = chart_factors[subgroup_size]["D3"]
-                        D4 = chart_factors[subgroup_size]["D4"]
-
-                        if show_xbar:
-                            plt.figure()
-                            plt.plot(range(1, n_groups + 1), subgroup_means, marker='o', linestyle='-', color='blue', label='サブグループ平均')
-                            plt.axhline(xbar_bar, color='green', linestyle='--', label='全体平均')
-                            plt.axhline(xbar_bar + A2 * R_bar, color='red', linestyle='--', label='上限管理限界')
-                            plt.axhline(xbar_bar - A2 * R_bar, color='red', linestyle='--', label='下限管理限界')
-                            if current_usl is not None:
-                                plt.axhline(current_usl, color='magenta', linestyle='-.', label='規格上限値')
-                            if current_lsl is not None:
-                                plt.axhline(current_lsl, color='cyan', linestyle='-.', label='規格下限値')
-                            plt.xlabel('サブグループ')
-                            plt.ylabel('平均値')
-                            plt.title(f"X-bar管理図 ({col_label})")
-                            plt.legend()
-                            xbar_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_xbar_{col_label}.jpg")
-                            plt.savefig(xbar_filename, format="jpg")
-                            plt.close()
-                            xbar_images.append(xbar_filename)
-                            log_messages += f"{col_label} のX-bar管理図生成完了。\n"
-
-                        if show_r:
-                            plt.figure()
-                            plt.plot(range(1, n_groups + 1), subgroup_ranges, marker='o', linestyle='-', color='blue', label='サブグループレンジ')
-                            plt.axhline(R_bar, color='green', linestyle='--', label='平均レンジ')
-                            plt.axhline(D4 * R_bar, color='red', linestyle='--', label='UCL')
-                            plt.axhline(D3 * R_bar, color='red', linestyle='--', label='LCL')
-                            plt.xlabel('サブグループ')
-                            plt.ylabel('レンジ')
-                            plt.title(f"R管理図 ({col_label})")
-                            plt.legend()
-                            r_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_r_{col_label}.jpg")
-                            plt.savefig(r_filename, format="jpg")
-                            plt.close()
-                            r_images.append(r_filename)
-                            log_messages += f"{col_label} のR管理図生成完了。\n"
-
-                        if show_s and subgroup_stds:
-                            s_bar = np.mean(subgroup_stds)
-                            c4 = math.sqrt(2/(subgroup_size-1)) * math.exp(math.lgamma(subgroup_size/2) - math.lgamma((subgroup_size-1)/2))
-                            sigma_s = s_bar * math.sqrt(1 - c4**2) / c4
-                            UCL_s = s_bar + 3 * sigma_s
-                            LCL_s = s_bar - 3 * sigma_s
-                            if LCL_s < 0:
-                                LCL_s = 0
-                            plt.figure()
-                            plt.plot(valid_std_indices, subgroup_stds, marker='o', linestyle='-', color='blue', label='サブグループ標準偏差')
-                            plt.axhline(s_bar, color='green', linestyle='--', label='全体平均標準偏差')
-                            plt.axhline(UCL_s, color='red', linestyle='--', label='UCL')
-                            plt.axhline(LCL_s, color='red', linestyle='--', label='LCL')
-                            plt.xlabel('サブグループ')
-                            plt.ylabel('標準偏差')
-                            plt.title(f"s管理図 ({col_label})")
-                            plt.legend()
-                            s_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_s_{col_label}.jpg")
-                            plt.savefig(s_filename, format="jpg")
-                            plt.close()
-                            s_images.append(s_filename)
-                            log_messages += f"{col_label} のs管理図生成完了。\n"
-                        else:
-                            if show_s:
-                                log_messages += f"警告: {col_label} のサブグループ標準偏差の計算に十分なデータがないため、s管理図を生成できませんでした。\n"
-                    else:
-                        log_messages += f"警告: サブグループサイズ {subgroup_size} に対する管理図ファクターが見つからなかったため、X-bar管理図とR管理図をスキップします。\n"
-                else:
-                    log_messages += f"警告: {col_label} のデータ点数がサブグループサイズより少ないため、X-bar管理図、R管理図およびs管理図を生成できませんでした。\n"
-            except Exception as e:
-                log_messages += f"エラー: {col_label} のX-bar/R/s管理図生成中に問題が発生しました: {e}\n"
 
     if results:
         dt_now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -432,12 +331,19 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
     return log_messages, hist_images, qq_images, density_images, xbar_images, r_images, s_images, excel_file, excel_preview
 
 # -------------------------
-# F検定/T検定実施関数（テストタブ用）
-def run_stat_test(uploaded_file, selected_columns, perform_f_test, alpha_f, perform_t_test, ttest_variant, alpha_t, include_first_row, plot_overlay):
+# F検定/t検定実施関数（テストタブ用）
+def run_stat_test(uploaded_file, selected_columns, perform_f_test, alpha_f, perform_t_test, ttest_variant, 
+                  alpha_t, include_first_row, plot_overlay, calc_corr):
     log_messages = ""
     density_images = []
     excel_file = None
     excel_preview = None
+
+    # 検定実施状況のフラグ・結果変数を初期化
+    t_test_done = False
+    f_test_done = False
+    t_stat, p_value_t, df_t = None, None, None
+    f_stat, p_value_f, dfn, dfd = None, None, None, None
 
     if uploaded_file is None:
         return "エラー: ファイルが選択されていません", [], None, None
@@ -505,11 +411,11 @@ def run_stat_test(uploaded_file, selected_columns, perform_f_test, alpha_f, perf
             f"P値: {p_value_f:.4f}\n"
             f"判定: {significance_f}\n"
         )
+        f_test_done = True
 
-    # ------ T検定 ------
+    # ------ t検定 ------
     if perform_t_test != "T検定を実施しない":
         if ttest_variant == "対応ありt検定":
-            # 両列のデータをひとまとめにして、片方でも欠損している行を除外する
             df_pair = pd.DataFrame({"data1": data1, "data2": data2}).dropna()
             if df_pair.empty:
                 return "エラー: 両群で有効なペアが存在しません。", [], None, None
@@ -528,31 +434,83 @@ def run_stat_test(uploaded_file, selected_columns, perform_f_test, alpha_f, perf
             return "エラー: t検定の種類が選択されていません。", [], None, None
         significance_t = "有意差あり" if p_value_t < alpha_t else "有意差なし"
         log_messages += (
-            f"T検定結果 ({ttest_variant}):\n"
+            f"t検定結果 ({ttest_variant}):\n"
             f"サンプル数: {n1}, {n2}\n"
             f"平均: {mean1:.4f}, {mean2:.4f}\n"
             f"分散: {var1:.4f}, {var2:.4f}\n"
-            f"T値: {t_stat:.4f}\n"
+            f"t値: {t_stat:.4f}\n"
             f"P値: {p_value_t:.4f}\n"
             f"有意水準: {alpha_t}\n"
             f"判定: {significance_t}\n"
         )
+        t_test_done = True
 
-    # ------ Excel出力用結果辞書 ------
     result_dict = {"検定対象1": col_names[0], "検定対象2": col_names[1]}
-    if perform_f_test == "F検定を実施する":
-        result_dict.update({"F値": f_stat, "P値 (F検定)": p_value_f, "判定 (F検定)": significance_f})
-    if perform_t_test != "T検定を実施しない":
-        result_dict.update({"T値": t_stat, "P値 (T検定)": p_value_t, "判定 (T検定)": significance_t})
+    if f_test_done:
+        result_dict.update({
+            "F値": f_stat,
+            "P値 (F検定)": p_value_f,
+            "判定 (F検定)": significance_f
+        })
+    if t_test_done:
+        result_dict.update({
+            "t値": t_stat,
+            "P値 (t検定)": p_value_t,
+            "判定 (t検定)": significance_t
+        })
+
+    # --- 新機能：相関計算の実施オプション ---
+    if calc_corr == "相関計算を実施する":
+        corr_coeff = None
+        r2_value = None
+        try:
+            df_corr = pd.DataFrame({"data1": data1, "data2": data2}).dropna()
+            if len(df_corr) > 1:
+                corr_coeff = df_corr["data1"].corr(df_corr["data2"])
+                r2_value = corr_coeff ** 2
+                log_messages += f"相関係数: {corr_coeff:.4f}\n決定係数: {r2_value:.4f}\n"
+            else:
+                log_messages += "警告: 相関計算に十分なデータがありません。\n"
+        except Exception as e:
+            log_messages += f"エラー: 相関計算中に問題が発生しました: {e}\n"
+
+        if corr_coeff is not None:
+            result_dict.update({"相関係数": corr_coeff, "決定係数": r2_value})
+
+        try:
+            plt.figure()
+            plt.scatter(df_corr["data1"], df_corr["data2"], color="blue", label="データポイント")
+            slope, intercept = np.polyfit(df_corr["data1"], df_corr["data2"], 1)
+            x_vals = np.linspace(df_corr["data1"].min(), df_corr["data1"].max(), 100)
+            y_vals = slope * x_vals + intercept
+            plt.plot(x_vals, y_vals, color="red", label="回帰直線")
+            plt.xlabel(selected_columns[0])
+            plt.ylabel(selected_columns[1])
+            plt.title("散布図")
+            plt.legend()
+            dt_scatter = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            scatter_filename = os.path.join(OUTPUT_DIR, f"{dt_scatter}_scatter.jpg")
+            plt.savefig(scatter_filename, format="jpg")
+            plt.close()
+            density_images.append(scatter_filename)
+            log_messages += "散布図生成完了。\n"
+        except Exception as e:
+            log_messages += f"エラー: 散布図生成中に問題が発生しました: {e}\n"
+
     results_df = pd.DataFrame([result_dict])
     dt_now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     excel_filename = os.path.join(OUTPUT_DIR, f"{dt_now}_stat_test_results.xlsx")
-    results_df.to_excel(excel_filename, index=False)
-    excel_file = excel_filename
-    excel_preview = results_df
+    try:
+        results_df.to_excel(excel_filename, index=False)
+        excel_file = excel_filename
+        excel_preview = results_df
+    except Exception as e:
+        log_messages += f"エラー: Excelファイル書き出し中に問題が発生しました: {e}\n"
 
-    # ------ グラフ生成（各群の正規分布の重ね描き）
+    # ------ グラフ生成（全体の正規分布の重ね描きと、各検定固有の分布プロット） ------
+    # 正規分布の重ね描きは、plot_overlayの設定に応じて生成
     if plot_overlay == "正規分布を表示する":
+        dt_now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
         try:
             overall_min = min(data1.min(), data2.min())
             overall_max = max(data1.max(), data2.max())
@@ -576,12 +534,10 @@ def run_stat_test(uploaded_file, selected_columns, perform_f_test, alpha_f, perf
             log_messages += "各群正規分布の重ね描きプロット生成完了。\n"
         except Exception as e:
             log_messages += f"エラー: 各群正規分布の重ね描きプロット生成中に問題が発生しました: {e}\n"
-    else:
-         log_messages += "正規分布の重ね描きは選択されなかったため生成をスキップしました。\n"
 
-    # ------ 理論分布プロットの生成（t分布, F分布）
-    try:
-        if perform_t_test != "T検定を実施しない":
+    # t検定が実施されている場合、独立して t分布プロットを生成
+    if t_test_done:
+        try:
             lower_bound = stats.t.ppf(0.001, df_t)
             upper_bound = stats.t.ppf(0.999, df_t)
             x_t = np.linspace(lower_bound, upper_bound, 200)
@@ -601,7 +557,12 @@ def run_stat_test(uploaded_file, selected_columns, perform_f_test, alpha_f, perf
             plt.close()
             density_images.append(t_plot_filename)
             log_messages += "t分布プロット生成完了。\n"
-        if perform_f_test == "F検定を実施する":
+        except Exception as e:
+            log_messages += f"エラー: t分布プロット生成中に問題が発生しました: {e}\n"
+
+    # F検定が実施されている場合、独立して F分布プロットを生成
+    if f_test_done:
+        try:
             lower_bound = stats.f.ppf(0.001, dfn, dfd)
             upper_bound = stats.f.ppf(0.999, dfn, dfd)
             x_f = np.linspace(lower_bound, upper_bound, 200)
@@ -621,8 +582,8 @@ def run_stat_test(uploaded_file, selected_columns, perform_f_test, alpha_f, perf
             plt.close()
             density_images.append(f_plot_filename)
             log_messages += "F分布プロット生成完了。\n"
-    except Exception as e:
-        log_messages += f"エラー: 検定分布プロット生成中に問題が発生しました: {e}\n"
+        except Exception as e:
+            log_messages += f"エラー: F分布プロット生成中に問題が発生しました: {e}\n"
 
     return log_messages, density_images, excel_file, excel_preview
 
@@ -728,8 +689,8 @@ with gr.Blocks() as demo:
             )
             open_folder_button.click(fn=open_output_folder, inputs=[], outputs=[])
 
-        # タブ2：F検定/T検定
-        with gr.Tab("🕵️F検定/T検定"):
+        # タブ2：F検定/t検定/相関
+        with gr.Tab("🕵️F検定/T検定/相関"):
             with gr.Row():
                 test_file_input = gr.File(label="Excelファイル (xlsx, xls)", file_count="single")
             with gr.Row():
@@ -742,28 +703,33 @@ with gr.Blocks() as demo:
             with gr.Row():
                 test_column_dropdown = gr.Dropdown(choices=[], label="検定対象の列を2つ選択してください", multiselect=True)
             with gr.Row():
-                # F検定の欄
+                # F検定
                 perform_f_test_radio = gr.Radio(
                     choices=["F検定を実施しない", "F検定を実施する"],
-                    label="F検定の実施",
+                    label="F検定",
                     value="F検定を実施する"
                 )
                 alpha_f_input = gr.Number(label="有意水準 (F検定)", value=0.05, precision=3)
             with gr.Row():
-                # T検定の欄
+                # t検定
                 perform_t_test_radio = gr.Radio(
                     choices=["T検定を実施しない", "対応ありt検定", "独立t検定（分散が等しい）", "独立t検定（分散が異なる）"],
-                    label="T検定の種類",
-                    value="独立t検定（分散が等しい）"
+                    label="t検定",
+                    value="対応ありt検定"
                 )
-                alpha_t_input = gr.Number(label="有意水準 (T検定)", value=0.05, precision=3)
+                alpha_t_input = gr.Number(label="有意水準 (t検定)", value=0.05, precision=3)
             with gr.Row():
                 plot_overlay_radio = gr.Radio(
                     choices=["正規分布を表示しない", "正規分布を表示する"],
                     label="正規分布の重ね描き",
-                    value="正規分布を表示する"
+                    value="正規分布を表示しない"
                 )
-                run_test_button = gr.Button("検定開始")
+                calc_corr_radio = gr.Radio(
+                    choices=["相関計算を実施しない", "相関計算を実施する"],
+                    label="相関計算",
+                    value="相関計算を実施しない"
+                )
+                run_test_button = gr.Button("解析実行")
             with gr.Row():
                 test_result_box = gr.Textbox(label="検定結果・ログ", lines=10, interactive=False)
             with gr.Row():
@@ -781,22 +747,26 @@ with gr.Blocks() as demo:
             )
             run_test_button.click(
                 fn=run_stat_test,
-                inputs=[test_file_input, test_column_dropdown, perform_f_test_radio, alpha_f_input,
-                        perform_t_test_radio, perform_t_test_radio, alpha_t_input, include_first_row_chk_test, plot_overlay_radio],
-                # ※注意：ここでは「perform_t_test_radio」から2回入力しているが、1つはttest_variantとして利用
+                inputs=[
+                    test_file_input, test_column_dropdown,
+                    perform_f_test_radio, alpha_f_input,
+                    perform_t_test_radio, perform_t_test_radio, alpha_t_input,
+                    include_first_row_chk_test, plot_overlay_radio, calc_corr_radio
+                ],
+                # ※ 注意：ここでは「perform_t_test_radio」から2回入力していますが、1つは ttest_variant として利用
                 outputs=[test_result_box, density_overlay_gallery, excel_test_file_box, excel_test_preview_box]
             )
             open_folder_test_button.click(fn=open_output_folder, inputs=[], outputs=[])      
 
         with gr.Tab("📖 初学者向け解説"):
-                try:
-                    with open("explanation.txt", "r", encoding="utf-8") as f:
-                        explanation_text = f.read()
-                except Exception as e:
-                    explanation_text = f"解説ファイルの読み込みに失敗しました: {e}"
-                gr.Markdown(explanation_text)
+            try:
+                with open("explanation.txt", "r", encoding="utf-8") as f:
+                    explanation_text = f.read()
+            except Exception as e:
+                explanation_text = f"解説ファイルの読み込みに失敗しました: {e}"
+            gr.Markdown(explanation_text)
 
-  # バージョン情報を動的に表示
+    # バージョン情報を動的に表示
     version = get_version()
     gr.Markdown(f"©2025 @KotaOoka  |  **バージョン: {version}**")
     
