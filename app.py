@@ -7,6 +7,14 @@ import numpy as np
 import math
 from PIL import Image
 import gradio as gr
+import re
+
+# -------------------------
+# ファイル名サニタイズ関数
+# ひらがな: \u3040-\u309F, カタカナ: \u30A0-\u30FF, 漢字: \u4E00-\u9FFF, 全角数字: \uFF10-\uFF19 も許可
+def sanitize_filename(name):
+    allowed_pattern = r'[^A-Za-z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uFF10-\uFF19_\-]'
+    return re.sub(allowed_pattern, '_', name, flags=re.UNICODE)
 
 # -------------------------
 # 初期設定：日本語フォント設定（Windowsの場合）
@@ -74,8 +82,8 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
     hist_images = []      # ヒストグラム
     qq_images = []        # QQプロット
     density_images = []   # 確率密度分布
-    xbar_images = []      # X-bar管理図 (または I管理図)
-    r_images = []         # R管理図 (または MR管理図)
+    xbar_images = []      # X-bar管理図／I管理図
+    r_images = []         # R管理図／MR管理図
     s_images = []         # s管理図（サブグループサイズ>=2の場合のみ）
     excel_file = None     # Excel出力ファイルパス
     excel_preview = None  # Excel出力結果プレビュー
@@ -182,6 +190,9 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
             continue
 
         timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        # ユーザー入力の列名はサニタイズする
+        safe_col_label = sanitize_filename(col_label)
+
 
         # ヒストグラム生成
         if show_hist:
@@ -254,8 +265,12 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
             except Exception as e:
                 log_messages += f"エラー: {col_label} の確率密度分布描画中に問題が発生しました: {e}\n"
 
-        # サブグループ管理図（I管理図/MR管理図、X-bar/R/s管理図）
+
+
+
+        # サブグループ管理図の生成
         if subgroup_size == 1:
+            # 個々のデータを使ったI管理図/MR管理図の生成
             individuals = data.values
             n_individuals = len(individuals)
             if n_individuals < 1:
@@ -283,7 +298,7 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
                         plt.ylabel('値')
                         plt.title(f"I管理図 ({col_label})")
                         plt.legend()
-                        i_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_i_{col_label}.jpg")
+                        i_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_i_{safe_col_label}.jpg")
                         plt.savefig(i_filename, format="jpg")
                         plt.close()
                         xbar_images.append(i_filename)
@@ -302,7 +317,7 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
                             plt.ylabel('移動範囲')
                             plt.title(f"MR管理図 ({col_label})")
                             plt.legend()
-                            mr_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_mr_{col_label}.jpg")
+                            mr_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_mr_{safe_col_label}.jpg")
                             plt.savefig(mr_filename, format="jpg")
                             plt.close()
                             r_images.append(mr_filename)
@@ -313,6 +328,99 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
                         log_messages += f"警告: {col_label} のデータ点数が不十分なため、MR管理図を生成できませんでした。\n"
                 if show_s:
                     log_messages += f"警告: サブグループサイズが1のため、s管理図は生成できません。\n"
+        else:
+            # サブグループサイズが1以外の場合：X-bar管理図、R管理図、s管理図の生成
+            groups = [data[i:i+subgroup_size] for i in range(0, len(data), subgroup_size)]
+            full_groups = [group for group in groups if len(group) == subgroup_size]
+            if not full_groups:
+                log_messages += f"警告: {col_label} のサブグループが形成できませんでした。\n"
+            else:
+                group_means = [np.mean(group) for group in full_groups]
+                group_ranges = [np.max(group) - np.min(group) for group in full_groups]
+                group_std = [np.std(group, ddof=1) for group in full_groups]
+                Xbar_center = np.mean(group_means)
+                Rbar = np.mean(group_ranges)
+                sbar = np.mean(group_std)
+                
+                subgroup_n = subgroup_size
+                factors = {
+                    2: {'A2': 1.88, 'D3': 0, 'D4': 3.267, 'B3': 0, 'B4': 2.568},
+                    3: {'A2': 1.023, 'D3': 0, 'D4': 2.574, 'B3': 0, 'B4': 2.089},
+                    4: {'A2': 0.729, 'D3': 0, 'D4': 2.282, 'B3': 0, 'B4': 1.880},
+                    5: {'A2': 0.577, 'D3': 0, 'D4': 2.114, 'B3': 0, 'B4': 1.716},
+                    6: {'A2': 0.483, 'D3': 0, 'D4': 2.004, 'B3': 0.03, 'B4': 1.924},
+                    7: {'A2': 0.419, 'D3': 0.076, 'D4': 1.924, 'B3': 0.118, 'B4': 1.816},
+                    8: {'A2': 0.373, 'D3': 0.136, 'D4': 1.864, 'B3': 0.185, 'B4': 1.734},
+                    9: {'A2': 0.337, 'D3': 0.184, 'D4': 1.816, 'B3': 0.239, 'B4': 1.66},
+                    10:{'A2': 0.308, 'D3': 0.223, 'D4': 1.777, 'B3': 0.284, 'B4': 1.602},
+                }
+                if subgroup_n not in factors:
+                    subgroup_n = max(factors.keys())
+                current_factors = factors[subgroup_n]
+                
+                # X-bar Chart
+                if show_xbar:
+                    try:
+                        UCL_xbar = Xbar_center + current_factors['A2'] * Rbar
+                        LCL_xbar = Xbar_center - current_factors['A2'] * Rbar
+                        plt.figure()
+                        plt.plot(range(1, len(group_means)+1), group_means, marker='o', linestyle='-', color='blue', label='サブグループ平均')
+                        plt.axhline(Xbar_center, color='green', linestyle='--', label='全体平均')
+                        plt.axhline(UCL_xbar, color='red', linestyle='--', label='UCL')
+                        plt.axhline(LCL_xbar, color='red', linestyle='--', label='LCL')
+                        plt.xlabel('サブグループ番号')
+                        plt.ylabel('サブグループ平均')
+                        plt.title(f"X-bar管理図 ({col_label})")
+                        plt.legend()
+                        xbar_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_xbar_{safe_col_label}.jpg")
+                        plt.savefig(xbar_filename, format="jpg")
+                        plt.close()
+                        xbar_images.append(xbar_filename)
+                        log_messages += f"{col_label} のX-bar管理図生成完了。\n"
+                    except Exception as e:
+                        log_messages += f"エラー: {col_label} のX-bar管理図生成中に問題が発生しました: {e}\n"
+                # R Chart
+                if show_r:
+                    try:
+                        UCL_R = current_factors['D4'] * Rbar
+                        LCL_R = current_factors['D3'] * Rbar
+                        plt.figure()
+                        plt.plot(range(1, len(group_ranges)+1), group_ranges, marker='o', linestyle='-', color='blue', label='サブグループレンジ')
+                        plt.axhline(Rbar, color='green', linestyle='--', label='平均レンジ')
+                        plt.axhline(UCL_R, color='red', linestyle='--', label='UCL')
+                        plt.axhline(LCL_R, color='red', linestyle='--', label='LCL')
+                        plt.xlabel('サブグループ番号')
+                        plt.ylabel('レンジ')
+                        plt.title(f"R管理図 ({col_label})")
+                        plt.legend()
+                        r_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_r_{safe_col_label}.jpg")
+                        plt.savefig(r_filename, format="jpg")
+                        plt.close()
+                        r_images.append(r_filename)
+                        log_messages += f"{col_label} のR管理図生成完了。\n"
+                    except Exception as e:
+                        log_messages += f"エラー: {col_label} のR管理図生成中に問題が発生しました: {e}\n"
+                # s Chart
+                if show_s:
+                    try:
+                        UCL_s = sbar * current_factors['B4']
+                        LCL_s = sbar * current_factors['B3']
+                        plt.figure()
+                        plt.plot(range(1, len(group_std)+1), group_std, marker='o', linestyle='-', color='blue', label='サブグループ標準偏差')
+                        plt.axhline(sbar, color='green', linestyle='--', label='平均標準偏差')
+                        plt.axhline(UCL_s, color='red', linestyle='--', label='UCL')
+                        plt.axhline(LCL_s, color='red', linestyle='--', label='LCL')
+                        plt.xlabel('サブグループ番号')
+                        plt.ylabel('標準偏差')
+                        plt.title(f"s管理図 ({col_label})")
+                        plt.legend()
+                        s_filename = os.path.join(OUTPUT_DIR, f"{timestamp}_s_{safe_col_label}.jpg")
+                        plt.savefig(s_filename, format="jpg")
+                        plt.close()
+                        s_images.append(s_filename)
+                        log_messages += f"{col_label} のs管理図生成完了。\n"
+                    except Exception as e:
+                        log_messages += f"エラー: {col_label} のs管理図生成中に問題が発生しました: {e}\n"
 
     if results:
         dt_now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -331,7 +439,7 @@ def run_analysis(uploaded_file, selected_columns, spec_table, subgroup_size, inc
     return log_messages, hist_images, qq_images, density_images, xbar_images, r_images, s_images, excel_file, excel_preview
 
 # -------------------------
-# F検定/t検定実施関数（テストタブ用）
+# F検定/t検定実施関数
 def run_stat_test(uploaded_file, selected_columns, perform_f_test, alpha_f, perform_t_test, ttest_variant, 
                   alpha_t, include_first_row, plot_overlay, calc_corr):
     log_messages = ""
@@ -508,7 +616,6 @@ def run_stat_test(uploaded_file, selected_columns, perform_f_test, alpha_f, perf
         log_messages += f"エラー: Excelファイル書き出し中に問題が発生しました: {e}\n"
 
     # ------ グラフ生成（全体の正規分布の重ね描きと、各検定固有の分布プロット） ------
-    # 正規分布の重ね描きは、plot_overlayの設定に応じて生成
     if plot_overlay == "正規分布を表示する":
         dt_now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
         try:
@@ -535,7 +642,6 @@ def run_stat_test(uploaded_file, selected_columns, perform_f_test, alpha_f, perf
         except Exception as e:
             log_messages += f"エラー: 各群正規分布の重ね描きプロット生成中に問題が発生しました: {e}\n"
 
-    # t検定が実施されている場合、独立して t分布プロットを生成
     if t_test_done:
         try:
             lower_bound = stats.t.ppf(0.001, df_t)
@@ -560,7 +666,6 @@ def run_stat_test(uploaded_file, selected_columns, perform_f_test, alpha_f, perf
         except Exception as e:
             log_messages += f"エラー: t分布プロット生成中に問題が発生しました: {e}\n"
 
-    # F検定が実施されている場合、独立して F分布プロットを生成
     if f_test_done:
         try:
             lower_bound = stats.f.ppf(0.001, dfn, dfd)
@@ -595,6 +700,7 @@ def open_output_folder():
         os.startfile(folder_path)
     except Exception as e:
         print(f"フォルダを開くのに失敗しました: {e}")
+
 
 # -------------------------
 # Gradio UI の構築
