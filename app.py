@@ -194,18 +194,41 @@ def run_analysis(uploaded_file, selected_targets, spec_table, subgroup_size, inc
             if std_val == 0:
                 log_messages += f"エラー: {target_label} の標準偏差が0のため、Cp/Cpk計算をスキップしました。（サンプル数: {sample_n}）\n"
                 continue
+
+            # --- Cp, Cpk およびその信頼区間の計算 ---
+            # 信頼区間計算はカイ二乗分布を利用。自由度は (n-1)。
+            df_chi = sample_n - 1
+            alpha_conf = 0.05  # 95%信頼区間
+            chi2_lower = stats.chi2.ppf(alpha_conf/2, df_chi)
+            chi2_upper = stats.chi2.ppf(1 - alpha_conf/2, df_chi)
+            # σの信頼区間
+            sigma_lower = math.sqrt((df_chi * std_val**2) / chi2_upper)
+            sigma_upper = math.sqrt((df_chi * std_val**2) / chi2_lower)
+            
             if current_usl is not None and current_lsl is not None:
                 spec_type = "両側"
                 Cp = (current_usl - current_lsl) / (6 * std_val)
                 Cpk = min((current_usl - mean_val), (mean_val - current_lsl)) / (3 * std_val)
+                Cp_lower = (current_usl - current_lsl) / (6 * sigma_upper)
+                Cp_upper = (current_usl - current_lsl) / (6 * sigma_lower)
+                Cpk_lower = min((current_usl - mean_val), (mean_val - current_lsl)) / (3 * sigma_upper)
+                Cpk_upper = min((current_usl - mean_val), (mean_val - current_lsl)) / (3 * sigma_lower)
             elif current_usl is not None:
                 spec_type = "上側のみ"
                 Cp = (current_usl - mean_val) / (3 * std_val)
-                Cpk = (current_usl - mean_val) / (3 * std_val)
+                Cpk = Cp
+                Cp_lower = (current_usl - mean_val) / (3 * sigma_upper)
+                Cp_upper = (current_usl - mean_val) / (3 * sigma_lower)
+                Cpk_lower = Cp_lower
+                Cpk_upper = Cp_upper
             elif current_lsl is not None:
                 spec_type = "下側のみ"
                 Cp = (mean_val - current_lsl) / (3 * std_val)
-                Cpk = (mean_val - current_lsl) / (3 * std_val)
+                Cpk = Cp
+                Cp_lower = (mean_val - current_lsl) / (3 * sigma_upper)
+                Cp_upper = (mean_val - current_lsl) / (3 * sigma_lower)
+                Cpk_lower = Cp_lower
+                Cpk_upper = Cp_upper
             else:
                 log_messages += f"エラー: {target_label} の規格値が入力されていません。\n"
                 continue
@@ -221,7 +244,11 @@ def run_analysis(uploaded_file, selected_targets, spec_table, subgroup_size, inc
                 "標準偏差": std_val,
                 "平均値": mean_val,
                 "Cp": Cp,
+                "Cp_lower": Cp_lower,
+                "Cp_upper": Cp_upper,
                 "Cpk": Cpk,
+                "Cpk_lower": Cpk_lower,
+                "Cpk_upper": Cpk_upper,
                 "尖度": kurtosis_val,
                 "歪度": skewness_val
             })
