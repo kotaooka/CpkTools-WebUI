@@ -197,10 +197,6 @@ rem Check if the virtual environment directory exists
   Licensed under the BSD 3-Clause License.  
   View the full license [here](https://github.com/pandas-dev/pandas/blob/main/LICENSE).
 
-- **pyarrow**  
-  Licensed under the Apache License 2.0.  
-  View the full license [here](https://github.com/apache/arrow/blob/master/LICENSE.txt).
-
 - **scipy**  
   Licensed under the BSD License.  
   View the full license [here](https://github.com/scipy/scipy/blob/main/LICENSE.txt).
@@ -216,10 +212,6 @@ rem Check if the virtual environment directory exists
 - **gradio**  
   Licensed under the MIT License.  
   View the full license [here](https://github.com/gradio-app/gradio/blob/main/LICENSE).
-
-- **openpyxl**  
-  Licensed under the MIT License.  
-  View details [here](https://openpyxl.readthedocs.io/en/stable/license.html).
 
 - **numpy**  
   Licensed under the BSD License.  
