@@ -39,49 +39,8 @@ def sanitize_filename(name):
     return re.sub(allowed_pattern, '_', name, flags=re.UNICODE)
 
 
-# =========================================================================
-# 管理図係数 - AIAG / ASTM E2587 準拠
-# =========================================================================
-CONTROL_CHART_FACTORS = {
-    # n: {A2, A3, D3, D4, B3, B4, c4, d2}
-    2:  {'A2': 1.880, 'A3': 2.659, 'D3': 0.000, 'D4': 3.267, 'B3': 0.000, 'B4': 3.267, 'c4': 0.7979, 'd2': 1.128},
-    3:  {'A2': 1.023, 'A3': 1.954, 'D3': 0.000, 'D4': 2.574, 'B3': 0.000, 'B4': 2.568, 'c4': 0.8862, 'd2': 1.693},
-    4:  {'A2': 0.729, 'A3': 1.628, 'D3': 0.000, 'D4': 2.282, 'B3': 0.000, 'B4': 2.266, 'c4': 0.9213, 'd2': 2.059},
-    5:  {'A2': 0.577, 'A3': 1.427, 'D3': 0.000, 'D4': 2.114, 'B3': 0.000, 'B4': 2.089, 'c4': 0.9400, 'd2': 2.326},
-    6:  {'A2': 0.483, 'A3': 1.287, 'D3': 0.000, 'D4': 2.004, 'B3': 0.030, 'B4': 1.970, 'c4': 0.9515, 'd2': 2.534},
-    7:  {'A2': 0.419, 'A3': 1.182, 'D3': 0.076, 'D4': 1.924, 'B3': 0.118, 'B4': 1.882, 'c4': 0.9594, 'd2': 2.704},
-    8:  {'A2': 0.373, 'A3': 1.099, 'D3': 0.136, 'D4': 1.864, 'B3': 0.185, 'B4': 1.815, 'c4': 0.9650, 'd2': 2.847},
-    9:  {'A2': 0.337, 'A3': 1.032, 'D3': 0.184, 'D4': 1.816, 'B3': 0.239, 'B4': 1.761, 'c4': 0.9693, 'd2': 2.970},
-    10: {'A2': 0.308, 'A3': 0.975, 'D3': 0.223, 'D4': 1.777, 'B3': 0.284, 'B4': 1.716, 'c4': 0.9727, 'd2': 3.078},
-}
-
-
-# =========================================================================
-# Cpk / Cp 信頼区間 (Bissell 近似 / カイ二乗ベース)
-# =========================================================================
-def cpk_confidence_interval_bissell(cpk_estimate, n, alpha=0.05):
-    """Bissell (1990) 近似で Cpk の信頼区間を求める。"""
-    if n < 2:
-        return None, None
-    if cpk_estimate == 0:
-        return None, None
-    z = stats.norm.ppf(1 - alpha / 2)
-    se_factor = math.sqrt(1.0 / (9.0 * n * cpk_estimate ** 2) + 1.0 / (2.0 * (n - 1)))
-    lcl = cpk_estimate * (1 - z * se_factor)
-    ucl = cpk_estimate * (1 + z * se_factor)
-    return min(lcl, ucl), max(lcl, ucl)
-
-
-def cp_confidence_interval(cp_estimate, n, alpha=0.05):
-    """Cp の信頼区間 (カイ二乗ベース、Minitab 準拠)"""
-    if n < 2:
-        return None, None
-    df_chi = n - 1
-    chi2_lower = stats.chi2.ppf(alpha / 2, df_chi)
-    chi2_upper = stats.chi2.ppf(1 - alpha / 2, df_chi)
-    lcl = cp_estimate * math.sqrt(chi2_lower / df_chi)
-    ucl = cp_estimate * math.sqrt(chi2_upper / df_chi)
-    return lcl, ucl
+# 管理図係数・工程能力指数の計算は capability.py（Gradio なしでテストできるよう分離）
+from capability import CONTROL_CHART_FACTORS, compute_capability
 
 
 # =========================================================================
@@ -235,26 +194,31 @@ def generate_cpk_html(results):
             return "△ 要注意"
         return "✕ 不良"
 
+    def _f(v, fmt="{:.3f}"):
+        return "―" if v is None else fmt.format(v)
+
     rows = ""
     for r in results:
-        cpk = r.get("Cpk")
-        cp = r.get("Cp")
-        cpk_lo = r.get("Cpk_lower (95%, Bissell)")
-        cpk_hi = r.get("Cpk_upper (95%, Bissell)")
-        ci = (f"{cpk_lo:.3f} ～ {cpk_hi:.3f}"
-              if cpk_lo is not None and cpk_hi is not None else "―")
-        bg = _color(cpk)
+        cpk, ppk = r.get("Cpk"), r.get("Ppk")
+        lo, hi = r.get("Ppk_lower (95%, Bissell)"), r.get("Ppk_upper (95%, Bissell)")
+        ci = f"{lo:.3f} ～ {hi:.3f}" if lo is not None and hi is not None else "―"
+        # 判定は Cpk（群内）で行う。Cpk を計算できないときだけ Ppk で判定し、その旨を表示する
+        judge_val = cpk if cpk is not None else ppk
+        judge = _label(judge_val) + ("" if cpk is not None else "（Ppk）")
         cell = "padding:5px 10px;border:1px solid #aaa;color:#222222"
         rows += (
-            f'<tr style="background:{bg};color:#222222">'
+            f'<tr style="color:#222222">'
             f'<td style="{cell}">{r["解析対象"]}</td>'
             f'<td style="{cell};text-align:center">{r["サンプル数"]}</td>'
             f'<td style="{cell};text-align:center">{r["平均値"]:.4f}</td>'
-            f'<td style="{cell};text-align:center">{r["標準偏差"]:.4f}</td>'
-            f'<td style="{cell};text-align:center">{"―" if cp is None else f"{cp:.3f}"}</td>'
-            f'<td style="{cell};text-align:center;font-weight:bold">{"―" if cpk is None else f"{cpk:.3f}"}</td>'
+            f'<td style="{cell};text-align:center">{_f(r["σ(群内)"], "{:.4f}")}</td>'
+            f'<td style="{cell};text-align:center">{r["標準偏差(全体)"]:.4f}</td>'
+            f'<td style="{cell};text-align:center">{_f(r.get("Cp"))}</td>'
+            f'<td style="{cell};text-align:center;font-weight:bold;background:{_color(cpk)}">{_f(cpk)}</td>'
+            f'<td style="{cell};text-align:center">{_f(r.get("Pp"))}</td>'
+            f'<td style="{cell};text-align:center;font-weight:bold;background:{_color(ppk)}">{_f(ppk)}</td>'
             f'<td style="{cell};text-align:center">{ci}</td>'
-            f'<td style="{cell};text-align:center;font-weight:bold">{_label(cpk)}</td>'
+            f'<td style="{cell};text-align:center;font-weight:bold;background:{_color(judge_val)}">{judge}</td>'
             f'</tr>\n'
         )
 
@@ -266,6 +230,11 @@ def generate_cpk_html(results):
         '<span style="background:#fff9c4;color:#222222;padding:2px 8px;border-radius:3px">△ 1.00 ≤ Cpk &lt; 1.33</span>'
         '<span style="background:#ffcdd2;color:#222222;padding:2px 8px;border-radius:3px">✕ Cpk &lt; 1.00</span>'
         '</div>'
+        '<div style="margin-top:4px;font-size:0.82em">'
+        'Cp/Cpk は群内変動 σ(群内)（サブグループ 2 以上: R̄/d2、1: MR̄/d2）、Pp/Ppk は全データの標準偏差で計算。'
+        '片側規格では Cp・Pp は計算せず、Cpk・Ppk に規格側の値（CPU/CPL・PPU/PPL）を表示。'
+        'σ(群内) はデータが測定順に並んでいる前提で求めるため、並び順が意味を持たないデータでは Pp/Ppk を参照してください。'
+        '</div>'
     )
 
     return (
@@ -274,11 +243,14 @@ def generate_cpk_html(results):
         f'<tr><th style="{th};text-align:left">解析対象</th>'
         f'<th style="{th}">n</th>'
         f'<th style="{th}">平均値</th>'
-        f'<th style="{th}">標準偏差</th>'
+        f'<th style="{th}">σ(群内)</th>'
+        f'<th style="{th}">σ(全体)</th>'
         f'<th style="{th}">Cp</th>'
         f'<th style="{th}">Cpk</th>'
-        f'<th style="{th}">Cpk 95%CI</th>'
-        f'<th style="{th}">判定</th>'
+        f'<th style="{th}">Pp</th>'
+        f'<th style="{th}">Ppk</th>'
+        f'<th style="{th}">Ppk 95%CI</th>'
+        f'<th style="{th}">判定(Cpk)</th>'
         '</tr></thead>'
         f'<tbody>\n{rows}</tbody>'
         '</table>'
@@ -375,16 +347,17 @@ def run_analysis(uploaded_file, selected_targets, spec_table, subgroup_size, inc
             log_messages += f"エラー: {target_label} の規格上限値({current_usl})が下限値({current_lsl})以下です。\n"
             continue
 
+        if current_usl is None and current_lsl is None:
+            log_messages += f"エラー: {target_label} の規格値が入力されていません。\n"
+            continue
+        spec_type = "両側" if current_usl is not None and current_lsl is not None else (
+            "上側のみ" if current_usl is not None else "下側のみ")
+
         try:
             max_val = float(data.max())
             min_val = float(data.min())
-            std_val = float(data.std(ddof=ddof_value))
-            mean_val = float(data.mean())
             kurtosis_val = float(data.kurtosis())
             skewness_val = float(data.skew())
-            if std_val == 0:
-                log_messages += f"エラー: {target_label} の標準偏差が0のため、Cp/Cpk計算をスキップ(n={sample_n})。\n"
-                continue
 
             # 正規性検定 (Shapiro-Wilk)
             if 3 <= sample_n <= 5000:
@@ -392,29 +365,19 @@ def run_analysis(uploaded_file, selected_targets, spec_table, subgroup_size, inc
                     sw_stat, sw_p = stats.shapiro(data)
                     if sw_p < 0.05:
                         log_messages += (f"警告: {target_label} はShapiro-Wilk検定でp={sw_p:.4f}<0.05、"
-                                         f"正規性に疑義あり。Cp/Cpk値の解釈に注意。\n")
+                                         f"正規性に疑義あり。工程能力指数の解釈に注意。\n")
                 except Exception:
                     pass
 
-            # === Cp / Cpk の点推定 ===
-            if current_usl is not None and current_lsl is not None:
-                spec_type = "両側"
-                Cp = (current_usl - current_lsl) / (6 * std_val)
-                Cpk = min((current_usl - mean_val), (mean_val - current_lsl)) / (3 * std_val)
-            elif current_usl is not None:
-                spec_type = "上側のみ"
-                Cp = (current_usl - mean_val) / (3 * std_val)
-                Cpk = Cp
-            elif current_lsl is not None:
-                spec_type = "下側のみ"
-                Cp = (mean_val - current_lsl) / (3 * std_val)
-                Cpk = Cp
-            else:
-                log_messages += f"エラー: {target_label} の規格値が入力されていません。\n"
+            # === Cp/Cpk（群内変動）と Pp/Ppk（全体変動） ===
+            cap = compute_capability(data.values, current_usl, current_lsl, int(subgroup_size), ddof=ddof_value)
+            std_val = cap["sigma_overall"]
+            mean_val = cap["mean"]
+            if std_val == 0:
+                log_messages += f"エラー: {target_label} の標準偏差が0のため、工程能力指数の計算をスキップ(n={sample_n})。\n"
                 continue
-
-            Cp_lower, Cp_upper = cp_confidence_interval(Cp, sample_n, alpha=0.05)
-            Cpk_lower, Cpk_upper = cpk_confidence_interval_bissell(Cpk, sample_n, alpha=0.05)
+            for note in cap["notes"]:
+                log_messages += f"注意: {target_label}: {note}\n"
 
             results.append({
                 "解析対象": target_label,
@@ -424,14 +387,18 @@ def run_analysis(uploaded_file, selected_targets, spec_table, subgroup_size, inc
                 "下限規格": current_lsl,
                 "最大値": max_val,
                 "最小値": min_val,
-                "標準偏差": std_val,
                 "平均値": mean_val,
-                "Cp": Cp,
-                "Cp_lower (95%)": Cp_lower,
-                "Cp_upper (95%)": Cp_upper,
-                "Cpk": Cpk,
-                "Cpk_lower (95%, Bissell)": Cpk_lower,
-                "Cpk_upper (95%, Bissell)": Cpk_upper,
+                "σ(群内)": cap["sigma_within"],
+                "σ(群内)の推定方法": cap["sigma_within_method"],
+                "標準偏差(全体)": std_val,
+                "Cp": cap["Cp"],
+                "Cpk": cap["Cpk"],
+                "Pp": cap["Pp"],
+                "Pp_lower (95%)": cap["Pp_ci"][0],
+                "Pp_upper (95%)": cap["Pp_ci"][1],
+                "Ppk": cap["Ppk"],
+                "Ppk_lower (95%, Bissell)": cap["Ppk_ci"][0],
+                "Ppk_upper (95%, Bissell)": cap["Ppk_ci"][1],
                 "尖度": kurtosis_val,
                 "歪度": skewness_val
             })
@@ -1131,7 +1098,7 @@ with gr.Blocks(title="CpkTools-WebUI") as demo:
                 subgroup_size_slider = gr.Slider(
                     minimum=1, maximum=10, step=1, value=5,
                     label="サブグループサイズ",
-                    info="1の場合はI管理図/MR管理図、2以上ならX-bar/R/s管理図を生成"
+                    info="1の場合はI管理図/MR管理図、2以上ならX-bar/R/s管理図を生成。Cp/Cpk の群内変動 σ もこの設定で推定（1: MR̄/d2、2以上: R̄/d2）"
                 )
             with gr.Accordion("📈 出力グラフ設定", open=True):
                 with gr.Row():
@@ -1145,7 +1112,7 @@ with gr.Blocks(title="CpkTools-WebUI") as demo:
             with gr.Row():
                 std_method_radio = gr.Radio(
                     choices=["サンプル標準偏差", "母集団標準偏差"],
-                    label="標準偏差の計算方法",
+                    label="全体の標準偏差（Pp/Ppk）の計算方法",
                     value="サンプル標準偏差"
                 )
 
